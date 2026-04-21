@@ -1,0 +1,57 @@
+name: LensAware
+options:
+  bundleIdPrefix: com.lensaware
+  deploymentTarget:
+    iOS: "17.0"
+  xcodeVersion: "16.0"
+  generateEmptyDirectories: true
+  createIntermediateGroups: true
+
+packages:
+  meta-wearables-dat-ios:
+    url: https://github.com/facebook/meta-wearables-dat-ios
+    exactVersion: "0.5.0"
+
+targets:
+  LensAware:
+    type: application
+    platform: iOS
+    deploymentTarget: "17.0"
+    sources:
+      - LensAware
+    info:
+      path: LensAware/Info.plist
+      properties:
+        CFBundleDisplayName: LensAware
+        CFBundleIdentifier: com.lensaware.app
+        CFBundleShortVersionString: "1.0"
+        CFBundleVersion: "1"
+        CFBundleURLTypes:
+          - CFBundleURLSchemes:
+              - lensaware
+            CFBundleURLName: com.lensaware.app
+        NSCameraUsageDescription: "LensAware uses your camera to analyse health context through your Meta Ray-Ban glasses."
+        NSBluetoothAlwaysUsageDescription: "LensAware uses Bluetooth to connect to your Meta Ray-Ban glasses."
+        NSMicrophoneUsageDescription: "LensAware may access the microphone for glasses audio."
+        UIApplicationSceneManifest:
+          UIApplicationSupportsMultipleScenes: false
+        UILaunchScreen:
+          UIColorName: ""
+        MWDAT:
+          MetaAppID: "1496345565256498"
+          ClientToken: "96d7fac74b7ae05ba7cb7dd73241e86c"
+          AppLinkURLScheme: "lensaware://"
+          TeamID: QV83FHLV6F
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.lensaware.app
+        SWIFT_VERSION: "6.0"
+        IPHONEOS_DEPLOYMENT_TARGET: "17.0"
+        DEVELOPMENT_TEAM: QV83FHLV6F
+        CODE_SIGN_STYLE: Automatic
+        SWIFT_STRICT_CONCURRENCY: complete
+    dependencies:
+      - package: meta-wearables-dat-ios
+        product: MWDATCore
+      - package: meta-wearables-dat-ios
+        product: MWDATCamera

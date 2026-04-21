@@ -1,0 +1,35 @@
+[
+  {
+    "tenant_id": "health_user_001",
+    "profile": "health",
+    "trigger": "food_detected",
+    "dataset": "nutrition_db",
+    "action": "estimate_nutrition",
+    "response_template": "{meal_type}, approximately {calories} calories.",
+    "tone": "coach",
+    "recipient": "self",
+    "language": "en"
+  },
+  {
+    "tenant_id": "health_user_001",
+    "profile": "health",
+    "trigger": "ergonomics_alert",
+    "dataset": null,
+    "action": "ergonomics_nudge",
+    "response_template": "Posture check. {suggestion}",
+    "tone": "calm",
+    "recipient": "self",
+    "language": "en"
+  },
+  {
+    "tenant_id": "health_user_001",
+    "profile": "health",
+    "trigger": "mindful_eating_low",
+    "dataset": null,
+    "action": "mindfulness_nudge",
+    "response_template": "Try putting the screen away while you eat.",
+    "tone": "gentle",
+    "recipient": "self",
+    "language": "en"
+  }
+]

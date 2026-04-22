@@ -17,7 +17,7 @@ struct LiveDetectionView: View {
                 Spacer()
                 detectionStatusBar
                 if case .responded(let analysis) = detectionManager.detectionState {
-                    HealthSummaryCard(analysis: analysis, firedRules: detectionManager.lastFiredRules) {
+                    HealthSummaryCard(analysis: analysis) {
                         detectionManager.resetState()
                     }
                     .padding(.horizontal, 16)
@@ -129,7 +129,6 @@ struct LiveDetectionView: View {
 
 private struct HealthSummaryCard: View {
     let analysis: LensAnalysis
-    let firedRules: [Rule]
     let onDismiss: () -> Void
 
     var body: some View {

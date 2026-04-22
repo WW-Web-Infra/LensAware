@@ -24,16 +24,14 @@ enum HealthDetectionState: Equatable {
 final class HealthDetectionManager: ObservableObject {
     @Published private(set) var detectionState: HealthDetectionState = .idle
     @Published private(set) var lastResponse: LensAnalysis?
-    @Published private(set) var lastFiredRules: [Rule] = []
 
     private let visionService: ClaudeVisionService?
-    private let rulesEngine   = RulesEngine()
-    private let audioManager  = AudioManager()
-    private let dbManager     = DatabaseManager()
+    private let rulesEngine    = RulesEngine()
+    private let audioManager   = AudioManager()
+    private let dbManager      = DatabaseManager()
     private lazy var responsePlayer = ResponsePlayer(audioManager: audioManager)
 
-    private let activeProfile = "health"
-    private let profileId     = 1
+    private let profileId = 1
 
     // MARK: - Init
 
@@ -69,14 +67,14 @@ extension HealthDetectionManager: CameraFrameDelegate {
         detectionState = .analyzing
 
         do {
-            let analysis   = try await service.analyze(imageData: imageData)
-            let firedRules = await rulesEngine.triggers(for: analysis, profile: activeProfile)
+            let analysis     = try await service.analyze(imageData: imageData)
+            let activeRules  = rulesEngine.defaultHealthRules()
+            let audioStrings = rulesEngine.evaluate(analysis: analysis, rules: activeRules)
 
             lastResponse   = analysis
-            lastFiredRules = firedRules
             detectionState = .responded(analysis)
 
-            responsePlayer.play(analysis: analysis, firedRules: firedRules)
+            responsePlayer.play(audioStrings)
 
             Task.detached { [dbManager, profileId, analysis] in
                 await dbManager.saveMeal(profileId: profileId, analysis: analysis)

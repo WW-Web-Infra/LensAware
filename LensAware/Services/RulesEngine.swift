@@ -1,97 +1,99 @@
 import Foundation
 
-// MARK: - RulesEngine
-// Actor serialises all public reads. Internal rules array is nonisolated(unsafe)
-// because it is only written once in init (before the actor is shared) and
-// read afterwards through actor-isolated methods only.
+final class RulesEngine {
 
-actor RulesEngine {
+    // MARK: - 1. defaultHealthRules
 
-    nonisolated(unsafe) private var rules: [Rule] = []
-
-    // MARK: - Init
-
-    init() {
-        loadRules()  // nonisolated — safe to call from sync init
+    func defaultHealthRules() -> [Rule] {
+        [
+            Rule(
+                id: UUID(),
+                tenantId: "health_user_001",
+                profile: .health,
+                trigger: "food_detected",
+                action: "estimate_nutrition",
+                tone: .coach,
+                recipient: "self",
+                isActive: true
+            ),
+            Rule(
+                id: UUID(),
+                tenantId: "health_user_001",
+                profile: .health,
+                trigger: "monitor_detected",
+                action: "ergonomics_check",
+                tone: .coach,
+                recipient: "self",
+                isActive: true
+            ),
+            Rule(
+                id: UUID(),
+                tenantId: "health_user_001",
+                profile: .health,
+                trigger: "meal_context",
+                action: "mindful_eating",
+                tone: .coach,
+                recipient: "self",
+                isActive: true
+            )
+        ]
     }
 
-    // MARK: - Public
+    // MARK: - 2. evaluate
 
-    func match(trigger: String, profile: String) -> Rule? {
-        rules.first { $0.trigger == trigger && $0.profile == profile }
+    /// Filters active rules, checks trigger conditions against the analysis,
+    /// and returns ordered audio strings ready to be played.
+    func evaluate(analysis: LensAnalysis, rules: [Rule]) -> [String] {
+        rules
+            .filter { $0.isActive }
+            .filter { triggerFires($0, for: analysis) }
+            .compactMap { buildAudioResponse(rule: $0, analysis: analysis) }
     }
 
-    func triggers(for analysis: LensAnalysis, profile: String) -> [Rule] {
-        var fired: [Rule] = []
+    // MARK: - 3. buildAudioResponse
 
-        if analysis.foodAnalysis.foodDetected,
-           let rule = match(trigger: "food_detected", profile: profile) {
-            fired.append(rule)
+    /// Maps a rule trigger to the matching fields in LensAnalysis and returns
+    /// a natural-language audio string, or nil if there is nothing to say.
+    func buildAudioResponse(rule: Rule, analysis: LensAnalysis) -> String? {
+        switch rule.trigger {
+
+        case "food_detected":
+            guard analysis.foodAnalysis.foodDetected else { return nil }
+            let food = analysis.foodAnalysis
+            guard !food.items.isEmpty else {
+                return "\(food.mealType.capitalized). About \(food.totalCalories) calories."
+            }
+            let top     = food.items[0]
+            let protein = Int(top.proteinG)
+            let carbs   = Int(top.carbsG)
+            return "\(food.mealType.capitalized). About \(food.totalCalories) calories — \(protein)g protein, \(carbs)g carbs."
+
+        case "monitor_detected":
+            guard analysis.ergonomics.assessment == "needs_adjustment" else { return nil }
+            return analysis.ergonomics.suggestion
+
+        case "meal_context":
+            guard analysis.foodAnalysis.foodDetected else { return nil }
+            switch analysis.diningContext.mindfulEatingScore {
+            case 1...2: return "You're eating with distractions. Try stepping away from the screen for this meal."
+            case 3:     return "Put down distractions to get more from your meal."
+            case 4...5: return "Good mindful eating. Enjoy your meal."
+            default:    return nil
+            }
+
+        default:
+            return nil
         }
-
-        if analysis.ergonomics.assessment == "needs_adjustment",
-           let rule = match(trigger: "ergonomics_alert", profile: profile) {
-            fired.append(rule)
-        }
-
-        if analysis.foodAnalysis.foodDetected,
-           analysis.diningContext.mindfulEatingScore <= 2,
-           let rule = match(trigger: "mindful_eating_low", profile: profile) {
-            fired.append(rule)
-        }
-
-        return fired
     }
 
-    // MARK: - Private (nonisolated — called only from init before actor is shared)
+    // MARK: - Private
 
-    private nonisolated func loadRules() {
-        guard let url = Bundle.main.url(
-            forResource: "rules",
-            withExtension: "json",
-            subdirectory: "Rules"
-        ),
-        let data = try? Data(contentsOf: url),
-        let loaded = try? JSONDecoder().decode([Rule].self, from: data) else {
-            rules = Self.defaultRules
-            return
+    private func triggerFires(_ rule: Rule, for analysis: LensAnalysis) -> Bool {
+        switch rule.trigger {
+        case "food_detected":    return analysis.foodAnalysis.foodDetected
+        case "monitor_detected": return analysis.ergonomics.assessment == "needs_adjustment"
+        case "meal_context":     return analysis.foodAnalysis.foodDetected
+        default:                 return false
         }
-        rules = loaded
     }
-
-    private nonisolated static let defaultRules: [Rule] = [
-        Rule(
-            tenantId: "health_user_001",
-            profile: "health",
-            trigger: "food_detected",
-            dataset: "nutrition_db",
-            action: "estimate_nutrition",
-            responseTemplate: "{meal_type}, approximately {calories} calories.",
-            tone: "coach",
-            recipient: "self",
-            language: "en"
-        ),
-        Rule(
-            tenantId: "health_user_001",
-            profile: "health",
-            trigger: "ergonomics_alert",
-            dataset: nil,
-            action: "ergonomics_nudge",
-            responseTemplate: "Posture check. {suggestion}",
-            tone: "calm",
-            recipient: "self",
-            language: "en"
-        ),
-        Rule(
-            tenantId: "health_user_001",
-            profile: "health",
-            trigger: "mindful_eating_low",
-            dataset: nil,
-            action: "mindfulness_nudge",
-            responseTemplate: "Try putting the screen away while you eat.",
-            tone: "gentle",
-            recipient: "self",
-            language: "en"
-        )
-    ]
 }

@@ -1,25 +1,26 @@
 import Foundation
 
 // MARK: - RulesEngine
+// Actor serialises all public reads. Internal rules array is nonisolated(unsafe)
+// because it is only written once in init (before the actor is shared) and
+// read afterwards through actor-isolated methods only.
 
 actor RulesEngine {
 
-    private var rules: [Rule] = []
+    nonisolated(unsafe) private var rules: [Rule] = []
 
     // MARK: - Init
 
     init() {
-        loadRules()
+        loadRules()  // nonisolated — safe to call from sync init
     }
 
     // MARK: - Public
 
-    /// Returns the first rule matching both trigger and profile, or nil if none found.
     func match(trigger: String, profile: String) -> Rule? {
         rules.first { $0.trigger == trigger && $0.profile == profile }
     }
 
-    /// Returns all triggers that fire given a health analysis response.
     func triggers(for analysis: HealthAnalysisResponse, profile: String) -> [Rule] {
         var fired: [Rule] = []
 
@@ -42,20 +43,23 @@ actor RulesEngine {
         return fired
     }
 
-    // MARK: - Private
+    // MARK: - Private (nonisolated — called only from init before actor is shared)
 
-    private func loadRules() {
-        guard let url = Bundle.main.url(forResource: "rules", withExtension: "json", subdirectory: "Rules"),
-              let data = try? Data(contentsOf: url) else {
+    private nonisolated func loadRules() {
+        guard let url = Bundle.main.url(
+            forResource: "rules",
+            withExtension: "json",
+            subdirectory: "Rules"
+        ),
+        let data = try? Data(contentsOf: url),
+        let loaded = try? JSONDecoder().decode([Rule].self, from: data) else {
             rules = Self.defaultRules
             return
         }
-        rules = (try? JSONDecoder().decode([Rule].self, from: data)) ?? Self.defaultRules
+        rules = loaded
     }
 
-    // MARK: - Defaults (fallback when rules.json is missing or malformed)
-
-    private static let defaultRules: [Rule] = [
+    private nonisolated static let defaultRules: [Rule] = [
         Rule(
             tenantId: "health_user_001",
             profile: "health",

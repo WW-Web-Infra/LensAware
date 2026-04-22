@@ -55,3 +55,4 @@ targets:
         product: MWDATCore
       - package: meta-wearables-dat-ios
         product: MWDATCamera
+      - sdk: libsqlite3.tbd

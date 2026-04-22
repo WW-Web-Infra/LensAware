@@ -5,16 +5,10 @@ enum ProfileType: String, Codable, Sendable {
     case care
 }
 
-struct Profile: Codable, Sendable {
-    let id: Int
+struct Profile: Sendable {
+    let id: Int64?            // nil when creating; set by DB on insert
     let tenantId: String
+    let name: String
     let profileType: ProfileType
     let settingsJSON: String?
-
-    enum CodingKeys: String, CodingKey {
-        case id
-        case tenantId     = "tenant_id"
-        case profileType  = "profile_type"
-        case settingsJSON = "settings_json"
-    }
 }

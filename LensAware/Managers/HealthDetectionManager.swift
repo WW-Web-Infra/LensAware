@@ -77,8 +77,35 @@ extension HealthDetectionManager: CameraFrameDelegate {
             responsePlayer.play(audioStrings)
 
             Task.detached { [dbManager, profileId, analysis] in
-                await dbManager.saveMeal(profileId: profileId, analysis: analysis)
-                await dbManager.saveErgonomicEvent(profileId: profileId, analysis: analysis)
+                if analysis.foodAnalysis.foodDetected {
+                    let itemsJSON = (try? JSONEncoder().encode(analysis.foodAnalysis.items))
+                        .flatMap { String(data: $0, encoding: .utf8) } ?? "[]"
+                    let meal = MealRecord(
+                        id:            nil,
+                        profileId:     Int64(profileId),
+                        timestamp:     Date(),
+                        mealType:      analysis.foodAnalysis.mealType,
+                        foodItemsJSON: itemsJSON,
+                        totalCalories: Double(analysis.foodAnalysis.totalCalories),
+                        context:       analysis.diningContext.location,
+                        screenVisible: analysis.diningContext.screenVisible,
+                        eatingAlone:   analysis.diningContext.eatingAlone,
+                        mindfulScore:  analysis.diningContext.mindfulEatingScore,
+                        confidence:    1.0
+                    )
+                    await dbManager.saveMeal(meal)
+                }
+                if analysis.ergonomics.assessment == "needs_adjustment" {
+                    let event = ErgonomicEvent(
+                        id:              nil,
+                        profileId:       Int64(profileId),
+                        timestamp:       Date(),
+                        monitorPosition: analysis.ergonomics.monitorPosition,
+                        assessment:      analysis.ergonomics.assessment,
+                        recommendation:  analysis.ergonomics.suggestion
+                    )
+                    await dbManager.saveErgonomicEvent(event)
+                }
             }
         } catch {
             detectionState = .failed(error.localizedDescription)

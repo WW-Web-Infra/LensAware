@@ -1,7 +1,5 @@
 import Foundation
 
-// MARK: - ResponsePlayer
-
 @MainActor
 final class ResponsePlayer {
 
@@ -13,30 +11,24 @@ final class ResponsePlayer {
 
     // MARK: - Public
 
-    /// Formats and speaks all fired rules for a given analysis response.
-    /// Food rule fires first; ergonomics second; mindfulness third.
-    /// Stays silent if no rules matched.
-    func play(analysis: HealthAnalysisResponse, firedRules: [Rule]) {
-        let lines = firedRules.compactMap { rule in
-            formatted(template: rule.responseTemplate, analysis: analysis)
-        }
+    func play(analysis: LensAnalysis, firedRules: [Rule]) {
+        let lines = firedRules.compactMap { formatted(template: $0.responseTemplate, analysis: analysis) }
         guard !lines.isEmpty else { return }
         audioManager.speak(lines.joined(separator: " "))
     }
 
     // MARK: - Template substitution
 
-    private func formatted(template: String, analysis: HealthAnalysisResponse) -> String? {
+    private func formatted(template: String, analysis: LensAnalysis) -> String? {
         var text = template
 
-        // {meal_type} — first food item name or "meal"
-        let mealType = analysis.foodAnalysis.items.first?.name ?? "meal"
-        text = text.replacingOccurrences(of: "{meal_type}", with: mealType)
+        // {meal_type} — meal type from API response ("lunch", "snack", etc.)
+        text = text.replacingOccurrences(of: "{meal_type}", with: analysis.foodAnalysis.mealType)
 
-        // {calories} — total calories as integer string
+        // {calories} — total calories
         text = text.replacingOccurrences(of: "{calories}", with: "\(analysis.foodAnalysis.totalCalories)")
 
-        // {suggestion} — ergonomics suggestion text
+        // {suggestion} — ergonomics suggestion
         text = text.replacingOccurrences(of: "{suggestion}", with: analysis.ergonomics.suggestion)
 
         // {score} — mindful eating score

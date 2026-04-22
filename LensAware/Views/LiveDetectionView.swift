@@ -128,7 +128,7 @@ struct LiveDetectionView: View {
 // MARK: - HealthSummaryCard
 
 private struct HealthSummaryCard: View {
-    let analysis: HealthAnalysisResponse
+    let analysis: LensAnalysis
     let firedRules: [Rule]
     let onDismiss: () -> Void
 
@@ -145,7 +145,7 @@ private struct HealthSummaryCard: View {
             }
 
             if analysis.foodAnalysis.foodDetected {
-                Label("\(analysis.foodAnalysis.totalCalories) kcal — \(analysis.foodAnalysis.items.first?.name ?? "food detected")", systemImage: "fork.knife")
+                Label("\(analysis.foodAnalysis.mealType.capitalized) — \(analysis.foodAnalysis.totalCalories) kcal", systemImage: "fork.knife")
                     .font(.subheadline)
             }
 

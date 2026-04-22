@@ -46,7 +46,7 @@ actor DatabaseManager {
         sqlite3_finalize(stmt)
     }
 
-    func saveMeal(profileId: Int, analysis: HealthAnalysisResponse) {
+    func saveMeal(profileId: Int, analysis: LensAnalysis) {
         let food = analysis.foodAnalysis
         guard food.foodDetected else { return }
 
@@ -73,7 +73,7 @@ actor DatabaseManager {
         sqlite3_finalize(stmt)
     }
 
-    func saveErgonomicEvent(profileId: Int, analysis: HealthAnalysisResponse) {
+    func saveErgonomicEvent(profileId: Int, analysis: LensAnalysis) {
         let ergo = analysis.ergonomics
         guard ergo.assessment == "needs_adjustment" else { return }
 

@@ -21,7 +21,7 @@ actor RulesEngine {
         rules.first { $0.trigger == trigger && $0.profile == profile }
     }
 
-    func triggers(for analysis: HealthAnalysisResponse, profile: String) -> [Rule] {
+    func triggers(for analysis: LensAnalysis, profile: String) -> [Rule] {
         var fired: [Rule] = []
 
         if analysis.foodAnalysis.foodDetected,

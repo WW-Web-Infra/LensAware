@@ -7,23 +7,80 @@ enum ClaudeVisionError: Error, LocalizedError {
     case missingConfig(String)
     case missingPrompt
     case httpError(Int, String)
-    case noToolUseBlock
+    case noContent
     case decodingFailed(Error)
 
     var errorDescription: String? {
         switch self {
-        case .missingAPIKey:          return "Claude API key not found in Config.plist."
-        case .missingConfig(let key): return "Config.plist missing key: \(key)."
-        case .missingPrompt:          return "combined_analysis.txt not found in bundle."
-        case .httpError(let code, let body): return "HTTP \(code): \(body)"
-        case .noToolUseBlock:         return "Claude response contained no tool_use block."
-        case .decodingFailed(let e):  return "Failed to decode analysis: \(e)"
+        case .missingAPIKey:               return "API key not found in Config.plist."
+        case .missingConfig(let key):      return "Config.plist missing key: \(key)."
+        case .missingPrompt:               return "combined_analysis.txt not found in bundle."
+        case .httpError(let code, let b):  return "HTTP \(code): \(b)"
+        case .noContent:                   return "API response contained no usable content."
+        case .decodingFailed(let e):       return "Failed to decode analysis: \(e)"
         }
     }
 }
 
-// MARK: - Claude API request / response types
+// ─────────────────────────────────────────────────────────────────────────────
+// MARK: - TESTING: Gemini request / response types (active)
+// ─────────────────────────────────────────────────────────────────────────────
 
+private struct GeminiRequest: Encodable {
+    let contents: [GeminiContent]
+    let generationConfig: GeminiGenerationConfig
+}
+
+private struct GeminiContent: Encodable {
+    let parts: [GeminiPart]
+}
+
+private enum GeminiPart: Encodable {
+    case inlineData(mimeType: String, base64: String)
+    case text(String)
+
+    func encode(to encoder: Encoder) throws {
+        var c = encoder.container(keyedBy: CodingKeys.self)
+        switch self {
+        case .inlineData(let mimeType, let data):
+            var nested = c.nestedContainer(keyedBy: InlineKeys.self, forKey: .inlineData)
+            try nested.encode(mimeType, forKey: .mimeType)
+            try nested.encode(data, forKey: .data)
+        case .text(let t):
+            try c.encode(t, forKey: .text)
+        }
+    }
+
+    enum CodingKeys: String, CodingKey { case inlineData = "inline_data", text }
+    enum InlineKeys: String, CodingKey { case mimeType = "mime_type", data }
+}
+
+private struct GeminiGenerationConfig: Encodable {
+    let responseMimeType: String
+    enum CodingKeys: String, CodingKey { case responseMimeType = "responseMimeType" }
+}
+
+private struct GeminiResponse: Decodable {
+    let candidates: [GeminiCandidate]
+}
+
+private struct GeminiCandidate: Decodable {
+    let content: GeminiResponseContent
+}
+
+private struct GeminiResponseContent: Decodable {
+    let parts: [GeminiResponsePart]
+}
+
+private struct GeminiResponsePart: Decodable {
+    let text: String?
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// MARK: - PRODUCTION: Claude request / response types (commented out)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/*
 private struct ClaudeRequest: Encodable {
     let model: String
     let maxTokens: Int
@@ -93,8 +150,11 @@ private struct ContentBlock: Decodable {
     let name: String?
     let input: JSONValue?
 }
+*/
 
-// MARK: - JSONValue (arbitrary JSON for schema + tool input parsing)
+// ─────────────────────────────────────────────────────────────────────────────
+// MARK: - JSONValue (shared — needed for Claude tool_use when re-enabled)
+// ─────────────────────────────────────────────────────────────────────────────
 
 enum JSONValue: Codable, Sendable {
     case string(String)
@@ -107,8 +167,8 @@ enum JSONValue: Codable, Sendable {
 
     init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
-        if let v = try? container.decode(Bool.self)   { self = .bool(v); return }
-        if let v = try? container.decode(Int.self)    { self = .int(v);  return }
+        if let v = try? container.decode(Bool.self)   { self = .bool(v);   return }
+        if let v = try? container.decode(Int.self)    { self = .int(v);    return }
         if let v = try? container.decode(Double.self) { self = .double(v); return }
         if let v = try? container.decode(String.self) { self = .string(v); return }
         if let v = try? container.decode([JSONValue].self) { self = .array(v); return }
@@ -128,14 +188,11 @@ enum JSONValue: Codable, Sendable {
         case .object(let v): try container.encode(v)
         }
     }
-
-    // Convert to raw Foundation object for JSONSerialization round-trip into Decodable
-    func toDecodableData() throws -> Data {
-        try JSONEncoder().encode(self)
-    }
 }
 
-// MARK: - ClaudeVisionService
+// ─────────────────────────────────────────────────────────────────────────────
+// MARK: - ClaudeVisionService (Gemini backend active for testing)
+// ─────────────────────────────────────────────────────────────────────────────
 
 actor ClaudeVisionService {
 
@@ -151,15 +208,23 @@ actor ClaudeVisionService {
               let config = NSDictionary(contentsOfFile: configPath) else {
             throw ClaudeVisionError.missingConfig("Config.plist")
         }
-        guard let key = config["ClaudeAPIKey"] as? String, !key.isEmpty, key != "YOUR_CLAUDE_API_KEY_HERE" else {
+
+        // ── TESTING: read Gemini credentials ──────────────────────────────────
+        guard let key = config["GeminiAPIKey"] as? String, !key.isEmpty else {
             throw ClaudeVisionError.missingAPIKey
         }
-        guard let mdl = config["ClaudeModel"] as? String else {
-            throw ClaudeVisionError.missingConfig("ClaudeModel")
+        guard let mdl = config["GeminiModel"] as? String else {
+            throw ClaudeVisionError.missingConfig("GeminiModel")
         }
-        guard let url = config["ClaudeAPIBaseURL"] as? String else {
-            throw ClaudeVisionError.missingConfig("ClaudeAPIBaseURL")
+        guard let url = config["GeminiAPIBaseURL"] as? String else {
+            throw ClaudeVisionError.missingConfig("GeminiAPIBaseURL")
         }
+        // ── PRODUCTION: swap to Claude credentials ────────────────────────────
+        // guard let key = config["ClaudeAPIKey"] as? String, !key.isEmpty,
+        //       key != "YOUR_CLAUDE_API_KEY_HERE" else { throw ClaudeVisionError.missingAPIKey }
+        // guard let mdl  = config["ClaudeModel"]      as? String else { throw ... }
+        // guard let url  = config["ClaudeAPIBaseURL"] as? String else { throw ... }
+        // ─────────────────────────────────────────────────────────────────────
 
         guard let promptURL = Bundle.main.url(
             forResource: "combined_analysis",
@@ -178,6 +243,87 @@ actor ClaudeVisionService {
     // MARK: - Public
 
     func analyze(imageData: Data) async throws -> HealthAnalysisResponse {
+        // ── TESTING: Gemini path ───────────────────────────────────────────────
+        return try await analyzeWithGemini(imageData: imageData)
+        // ── PRODUCTION: Claude path (swap back when ready) ────────────────────
+        // return try await analyzeWithClaude(imageData: imageData)
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // MARK: - Gemini implementation (active)
+    // ─────────────────────────────────────────────────────────────────────────
+
+    private func analyzeWithGemini(imageData: Data) async throws -> HealthAnalysisResponse {
+        let base64 = imageData.base64EncodedString()
+
+        // Append JSON schema instruction to the prompt so Gemini returns
+        // a valid HealthAnalysisResponse without tool_use
+        let fullPrompt = prompt + """
+
+Return ONLY a JSON object with this exact structure — no markdown, no explanation:
+{
+  "food_analysis": {
+    "food_detected": <bool>,
+    "items": [{"name": <string>, "calories": <int>, "protein_g": <number>, "carbs_g": <number>, "fat_g": <number>}],
+    "total_calories": <int>
+  },
+  "dining_context": {
+    "location": <string>,
+    "screen_visible": <bool>,
+    "eating_alone": <bool>,
+    "mindful_eating_score": <int 1-5>
+  },
+  "ergonomics": {
+    "monitor_position": <string>,
+    "assessment": <string>,
+    "suggestion": <string>
+  }
+}
+"""
+
+        let request = GeminiRequest(
+            contents: [
+                GeminiContent(parts: [
+                    .inlineData(mimeType: "image/jpeg", base64: base64),
+                    .text(fullPrompt)
+                ])
+            ],
+            generationConfig: GeminiGenerationConfig(responseMimeType: "application/json")
+        )
+
+        let urlString = "\(baseURL)/\(model):generateContent?key=\(apiKey)"
+        var urlRequest = URLRequest(url: URL(string: urlString)!)
+        urlRequest.httpMethod = "POST"
+        urlRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        urlRequest.httpBody = try JSONEncoder().encode(request)
+
+        let (data, response) = try await URLSession.shared.data(for: urlRequest)
+
+        if let http = response as? HTTPURLResponse, http.statusCode != 200 {
+            let body = String(data: data, encoding: .utf8) ?? ""
+            throw ClaudeVisionError.httpError(http.statusCode, body)
+        }
+
+        let geminiResponse = try JSONDecoder().decode(GeminiResponse.self, from: data)
+
+        guard let text = geminiResponse.candidates.first?.content.parts.first?.text,
+              let jsonData = text.data(using: .utf8) else {
+            throw ClaudeVisionError.noContent
+        }
+
+        do {
+            return try JSONDecoder().decode(HealthAnalysisResponse.self, from: jsonData)
+        } catch {
+            throw ClaudeVisionError.decodingFailed(error)
+        }
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // MARK: - Claude implementation (commented out — restore for production)
+    // ─────────────────────────────────────────────────────────────────────────
+
+    /*
+    private func analyzeWithClaude(imageData: Data) async throws -> HealthAnalysisResponse {
         let base64 = imageData.base64EncodedString()
 
         let request = ClaudeRequest(
@@ -193,14 +339,12 @@ actor ClaudeVisionService {
             ]
         )
 
-        let body = try JSONEncoder().encode(request)
-
         var urlRequest = URLRequest(url: URL(string: baseURL)!)
         urlRequest.httpMethod = "POST"
         urlRequest.setValue(apiKey, forHTTPHeaderField: "x-api-key")
         urlRequest.setValue("2023-06-01", forHTTPHeaderField: "anthropic-version")
         urlRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        urlRequest.httpBody = body
+        urlRequest.httpBody = try JSONEncoder().encode(request)
 
         let (data, response) = try await URLSession.shared.data(for: urlRequest)
 
@@ -213,18 +357,16 @@ actor ClaudeVisionService {
 
         guard let toolBlock = claudeResponse.content.first(where: { $0.type == "tool_use" }),
               let inputValue = toolBlock.input else {
-            throw ClaudeVisionError.noToolUseBlock
+            throw ClaudeVisionError.noContent
         }
 
         do {
-            let inputData = try inputValue.toDecodableData()
+            let inputData = try JSONEncoder().encode(inputValue)
             return try JSONDecoder().decode(HealthAnalysisResponse.self, from: inputData)
         } catch {
             throw ClaudeVisionError.decodingFailed(error)
         }
     }
-
-    // MARK: - Tool schema
 
     private var healthAnalysisTool: ClaudeTool {
         ClaudeTool(
@@ -279,4 +421,5 @@ actor ClaudeVisionService {
             ])
         )
     }
+    */
 }

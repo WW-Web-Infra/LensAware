@@ -1,0 +1,483 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		0C46D36EDC22AA243D8160BC /* GlassesManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5379DE5EB8F7EB58A581BDF5 /* GlassesManager.swift */; };
+		0E33B2A4D289CD29B3915F02 /* AudioManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 502C8DA6BFDB9ADB3AB90BB7 /* AudioManager.swift */; };
+		2480742D976ECD14C8C3C1BA /* HealthDetectionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73322A4B44F4991B621AAE07 /* HealthDetectionManager.swift */; };
+		3DDD2EDACA346B24E84D6509 /* Config.plist in Resources */ = {isa = PBXBuildFile; fileRef = B8AC8E496DCB97BDCC6B5643 /* Config.plist */; };
+		4653B2DE8D66366B34AEECF0 /* MWDATCore in Frameworks */ = {isa = PBXBuildFile; productRef = 93F10253B82174B1FA2537A1 /* MWDATCore */; };
+		5A5B1D0BCBDF539D3C3757A5 /* LiveDetectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A59E3F2BE85DE31DA115633A /* LiveDetectionView.swift */; };
+		680A8075F396F579FEC64DF7 /* combined_analysis.txt in Resources */ = {isa = PBXBuildFile; fileRef = ADC3B66E0B13B2CF38085AFC /* combined_analysis.txt */; };
+		6C71F586476367133158E5E3 /* RulesEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5037EAE7C12F3673DF5815C /* RulesEngine.swift */; };
+		74A9B1D5EFE330B466D7455B /* MWDATCamera in Frameworks */ = {isa = PBXBuildFile; productRef = 7AD3BE926E45B8C10F6E245E /* MWDATCamera */; };
+		82F85B5146001ACE4B294F3E /* Profile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 346AD41B590E713BFFAA7B17 /* Profile.swift */; };
+		86DFF63F868E452BBCF7157D /* ResponsePlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = D29DC3D26AA8E2E1971F0D19 /* ResponsePlayer.swift */; };
+		904475F47649E1F36FB38627 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC49B26102B801354564AE7D /* ContentView.swift */; };
+		A53FB4D4916ACA7E0999A803 /* CameraStreamManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1EED7DAF80E1D6A6163B15C9 /* CameraStreamManager.swift */; };
+		AA9FF26CD374CBD064408ECF /* HealthAnalysis.swift in Sources */ = {isa = PBXBuildFile; fileRef = 156B39F025F2C25B8745C0A3 /* HealthAnalysis.swift */; };
+		B57F304B2B29F6D285B95C71 /* ClaudeVisionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FCF30517C53F4ED735477709 /* ClaudeVisionService.swift */; };
+		BE1756BC9547D05BB248A9FB /* rules.json in Resources */ = {isa = PBXBuildFile; fileRef = C66C227149CC6C2F98B27E89 /* rules.json */; };
+		C45F2F038E57C1382E221585 /* DatabaseManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 193108782A105A84CE19C117 /* DatabaseManager.swift */; };
+		E6229E27AAE32E491644290F /* LensAwareApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = E173EAF63670126326DC7D27 /* LensAwareApp.swift */; };
+		FAFA76A3FF9C71CBAA328315 /* Rule.swift in Sources */ = {isa = PBXBuildFile; fileRef = D94543960094D6255D077B6C /* Rule.swift */; };
+		FC80AA413E5A045EA53C4E6B /* ConnectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95D2C2DD1710052AB5372A28 /* ConnectionView.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		156B39F025F2C25B8745C0A3 /* HealthAnalysis.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthAnalysis.swift; sourceTree = "<group>"; };
+		193108782A105A84CE19C117 /* DatabaseManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatabaseManager.swift; sourceTree = "<group>"; };
+		1EED7DAF80E1D6A6163B15C9 /* CameraStreamManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraStreamManager.swift; sourceTree = "<group>"; };
+		346AD41B590E713BFFAA7B17 /* Profile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Profile.swift; sourceTree = "<group>"; };
+		502C8DA6BFDB9ADB3AB90BB7 /* AudioManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioManager.swift; sourceTree = "<group>"; };
+		5379DE5EB8F7EB58A581BDF5 /* GlassesManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlassesManager.swift; sourceTree = "<group>"; };
+		5AF2A7C29A72F588431FDA60 /* LensAware.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = LensAware.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		73322A4B44F4991B621AAE07 /* HealthDetectionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthDetectionManager.swift; sourceTree = "<group>"; };
+		95D2C2DD1710052AB5372A28 /* ConnectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectionView.swift; sourceTree = "<group>"; };
+		A59E3F2BE85DE31DA115633A /* LiveDetectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveDetectionView.swift; sourceTree = "<group>"; };
+		ADC3B66E0B13B2CF38085AFC /* combined_analysis.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = combined_analysis.txt; sourceTree = "<group>"; };
+		B8AC8E496DCB97BDCC6B5643 /* Config.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Config.plist; sourceTree = "<group>"; };
+		C66C227149CC6C2F98B27E89 /* rules.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = rules.json; sourceTree = "<group>"; };
+		D29DC3D26AA8E2E1971F0D19 /* ResponsePlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResponsePlayer.swift; sourceTree = "<group>"; };
+		D94543960094D6255D077B6C /* Rule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Rule.swift; sourceTree = "<group>"; };
+		E173EAF63670126326DC7D27 /* LensAwareApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LensAwareApp.swift; sourceTree = "<group>"; };
+		E5037EAE7C12F3673DF5815C /* RulesEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RulesEngine.swift; sourceTree = "<group>"; };
+		F9E22A7BC4CCE53555C80139 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		FC49B26102B801354564AE7D /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		FCF30517C53F4ED735477709 /* ClaudeVisionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClaudeVisionService.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		B473764AB5C332D19985AEFA /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4653B2DE8D66366B34AEECF0 /* MWDATCore in Frameworks */,
+				74A9B1D5EFE330B466D7455B /* MWDATCamera in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		0CEC941D8105E1014FAC5329 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				FCF30517C53F4ED735477709 /* ClaudeVisionService.swift */,
+				193108782A105A84CE19C117 /* DatabaseManager.swift */,
+				D29DC3D26AA8E2E1971F0D19 /* ResponsePlayer.swift */,
+				E5037EAE7C12F3673DF5815C /* RulesEngine.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		0D0AB122CE88CA0C1BC8C6C0 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				5AF2A7C29A72F588431FDA60 /* LensAware.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		39B77CBAC9812C6514B19868 /* health */ = {
+			isa = PBXGroup;
+			children = (
+				ADC3B66E0B13B2CF38085AFC /* combined_analysis.txt */,
+			);
+			path = health;
+			sourceTree = "<group>";
+		};
+		3F5C0407699148EC4BDEBB3A /* LensAware */ = {
+			isa = PBXGroup;
+			children = (
+				B8AC8E496DCB97BDCC6B5643 /* Config.plist */,
+				F9E22A7BC4CCE53555C80139 /* Info.plist */,
+				E173EAF63670126326DC7D27 /* LensAwareApp.swift */,
+				C94BD06CC9EB37F6AAFDBC54 /* Audio */,
+				8CACB792606950269EF12819 /* Managers */,
+				C9C89D9F46F8C136E17FB512 /* Models */,
+				8DC2F842EE3B27768204D4B4 /* Prompts */,
+				720A062701F4A427E6092EB4 /* Rules */,
+				0CEC941D8105E1014FAC5329 /* Services */,
+				D4836BBB71DF4327D57AC3C1 /* Views */,
+			);
+			path = LensAware;
+			sourceTree = "<group>";
+		};
+		720A062701F4A427E6092EB4 /* Rules */ = {
+			isa = PBXGroup;
+			children = (
+				C66C227149CC6C2F98B27E89 /* rules.json */,
+			);
+			path = Rules;
+			sourceTree = "<group>";
+		};
+		8CACB792606950269EF12819 /* Managers */ = {
+			isa = PBXGroup;
+			children = (
+				502C8DA6BFDB9ADB3AB90BB7 /* AudioManager.swift */,
+				1EED7DAF80E1D6A6163B15C9 /* CameraStreamManager.swift */,
+				5379DE5EB8F7EB58A581BDF5 /* GlassesManager.swift */,
+				73322A4B44F4991B621AAE07 /* HealthDetectionManager.swift */,
+			);
+			path = Managers;
+			sourceTree = "<group>";
+		};
+		8DC2F842EE3B27768204D4B4 /* Prompts */ = {
+			isa = PBXGroup;
+			children = (
+				39B77CBAC9812C6514B19868 /* health */,
+			);
+			path = Prompts;
+			sourceTree = "<group>";
+		};
+		99CE9E72500A3128AC20EC1E = {
+			isa = PBXGroup;
+			children = (
+				3F5C0407699148EC4BDEBB3A /* LensAware */,
+				0D0AB122CE88CA0C1BC8C6C0 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		C94BD06CC9EB37F6AAFDBC54 /* Audio */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Audio;
+			sourceTree = "<group>";
+		};
+		C9C89D9F46F8C136E17FB512 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				156B39F025F2C25B8745C0A3 /* HealthAnalysis.swift */,
+				346AD41B590E713BFFAA7B17 /* Profile.swift */,
+				D94543960094D6255D077B6C /* Rule.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		D4836BBB71DF4327D57AC3C1 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				95D2C2DD1710052AB5372A28 /* ConnectionView.swift */,
+				FC49B26102B801354564AE7D /* ContentView.swift */,
+				A59E3F2BE85DE31DA115633A /* LiveDetectionView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		9A1CAF2FCED79E77492DD539 /* LensAware */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 068E32FCB4A6D6AEDA8AD143 /* Build configuration list for PBXNativeTarget "LensAware" */;
+			buildPhases = (
+				B5841D30648F168D98465751 /* Sources */,
+				A25B2079966947D9CB4A3203 /* Resources */,
+				B473764AB5C332D19985AEFA /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = LensAware;
+			packageProductDependencies = (
+				93F10253B82174B1FA2537A1 /* MWDATCore */,
+				7AD3BE926E45B8C10F6E245E /* MWDATCamera */,
+			);
+			productName = LensAware;
+			productReference = 5AF2A7C29A72F588431FDA60 /* LensAware.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		6CC0967575D7F6B2392DE598 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1600;
+				TargetAttributes = {
+					9A1CAF2FCED79E77492DD539 = {
+						DevelopmentTeam = QV83FHLV6F;
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = BDD0960456F7D77E08710EFA /* Build configuration list for PBXProject "LensAware" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 99CE9E72500A3128AC20EC1E;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				2487B43030EEF0E3EAC99F9B /* XCRemoteSwiftPackageReference "meta-wearables-dat-ios" */,
+			);
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 0D0AB122CE88CA0C1BC8C6C0 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				9A1CAF2FCED79E77492DD539 /* LensAware */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		A25B2079966947D9CB4A3203 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3DDD2EDACA346B24E84D6509 /* Config.plist in Resources */,
+				680A8075F396F579FEC64DF7 /* combined_analysis.txt in Resources */,
+				BE1756BC9547D05BB248A9FB /* rules.json in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		B5841D30648F168D98465751 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0E33B2A4D289CD29B3915F02 /* AudioManager.swift in Sources */,
+				A53FB4D4916ACA7E0999A803 /* CameraStreamManager.swift in Sources */,
+				B57F304B2B29F6D285B95C71 /* ClaudeVisionService.swift in Sources */,
+				FC80AA413E5A045EA53C4E6B /* ConnectionView.swift in Sources */,
+				904475F47649E1F36FB38627 /* ContentView.swift in Sources */,
+				C45F2F038E57C1382E221585 /* DatabaseManager.swift in Sources */,
+				0C46D36EDC22AA243D8160BC /* GlassesManager.swift in Sources */,
+				AA9FF26CD374CBD064408ECF /* HealthAnalysis.swift in Sources */,
+				2480742D976ECD14C8C3C1BA /* HealthDetectionManager.swift in Sources */,
+				E6229E27AAE32E491644290F /* LensAwareApp.swift in Sources */,
+				5A5B1D0BCBDF539D3C3757A5 /* LiveDetectionView.swift in Sources */,
+				82F85B5146001ACE4B294F3E /* Profile.swift in Sources */,
+				86DFF63F868E452BBCF7157D /* ResponsePlayer.swift in Sources */,
+				FAFA76A3FF9C71CBAA328315 /* Rule.swift in Sources */,
+				6C71F586476367133158E5E3 /* RulesEngine.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		627597BD5AC1FD6B34235B73 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = QV83FHLV6F;
+				INFOPLIST_FILE = LensAware/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.lensaware.app;
+				SDKROOT = iphoneos;
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		86521A571D9DA756E8107B2B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		8A7B7C6D2BAC23E4793DE81B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = QV83FHLV6F;
+				INFOPLIST_FILE = LensAware/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.lensaware.app;
+				SDKROOT = iphoneos;
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		9D7DCDF58EC5C286781A8765 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		068E32FCB4A6D6AEDA8AD143 /* Build configuration list for PBXNativeTarget "LensAware" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				627597BD5AC1FD6B34235B73 /* Debug */,
+				8A7B7C6D2BAC23E4793DE81B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		BDD0960456F7D77E08710EFA /* Build configuration list for PBXProject "LensAware" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				9D7DCDF58EC5C286781A8765 /* Debug */,
+				86521A571D9DA756E8107B2B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		2487B43030EEF0E3EAC99F9B /* XCRemoteSwiftPackageReference "meta-wearables-dat-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/facebook/meta-wearables-dat-ios";
+			requirement = {
+				kind = exactVersion;
+				version = 0.5.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		7AD3BE926E45B8C10F6E245E /* MWDATCamera */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 2487B43030EEF0E3EAC99F9B /* XCRemoteSwiftPackageReference "meta-wearables-dat-ios" */;
+			productName = MWDATCamera;
+		};
+		93F10253B82174B1FA2537A1 /* MWDATCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 2487B43030EEF0E3EAC99F9B /* XCRemoteSwiftPackageReference "meta-wearables-dat-ios" */;
+			productName = MWDATCore;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = 6CC0967575D7F6B2392DE598 /* Project object */;
+}

@@ -1,17 +1,24 @@
 import Foundation
 
-enum ToneType: String, Sendable {
-    case coach
-    case companion
+// MARK: - ToneType
+
+enum ToneType: String, Codable, Sendable {
+    case coach      // direct, data-rich
+    case guide      // warm, narrative
+    case companion  // calm, simple, short
+    case alert      // brief, urgent
 }
 
-struct Rule: Sendable {
+// MARK: - Rule
+
+struct Rule: Codable, Identifiable, Sendable {
     let id: UUID
+    let profileId: UUID
     let tenantId: String
-    let profile: ProfileType
     let trigger: String
-    let action: String
-    let tone: ToneType
-    let recipient: String
-    let isActive: Bool
+    let actionType: ActionType
+    let actionConfigJSON: String?
+    let responseTemplate: String?
+    let priority: Int
+    var isActive: Bool
 }

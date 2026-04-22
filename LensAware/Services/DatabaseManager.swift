@@ -8,6 +8,22 @@ import SQLite3
 
 private let SQLITE_TRANSIENT = unsafeBitCast(-1, to: sqlite3_destructor_type.self)
 
+// MARK: - DatabaseError
+
+enum DatabaseError: Error, LocalizedError {
+    case systemProfileCannotBeDeleted
+    case profileNotFound
+    case writeError(String)
+
+    var errorDescription: String? {
+        switch self {
+        case .systemProfileCannotBeDeleted: return "Built-in profiles cannot be deleted."
+        case .profileNotFound:              return "Profile not found."
+        case .writeError(let msg):          return "Database write error: \(msg)"
+        }
+    }
+}
+
 actor DatabaseManager {
 
     nonisolated(unsafe) private var db: OpaquePointer?
@@ -184,7 +200,219 @@ actor DatabaseManager {
         sqlite3_finalize(stmt)
     }
 
-    // MARK: - 8. saveTraceEvent
+    // MARK: - 8. saveProfile (LensProfile)
+
+    func saveProfile(_ profile: LensProfile) throws {
+        let sql = """
+            INSERT OR REPLACE INTO lens_profiles
+              (id, tenant_id, name, description, trigger_type, dataset_type,
+               dataset_config_json, tone, is_active, is_system, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+        """
+        guard let stmt = prepare(sql) else {
+            throw DatabaseError.writeError("Could not prepare lens_profiles insert")
+        }
+        bindText(stmt, 1,  profile.id.uuidString)
+        bindText(stmt, 2,  profile.tenantId)
+        bindText(stmt, 3,  profile.name)
+        bindText(stmt, 4,  profile.description)
+        bindText(stmt, 5,  profile.triggerType.rawValue)
+        bindText(stmt, 6,  profile.datasetType.rawValue)
+        if let cfg = profile.datasetConfigJSON { bindText(stmt, 7, cfg) } else { sqlite3_bind_null(stmt, 7) }
+        bindText(stmt, 8,  profile.tone.rawValue)
+        sqlite3_bind_int(stmt, 9,  profile.isActive ? 1 : 0)
+        sqlite3_bind_int(stmt, 10, profile.isSystem ? 1 : 0)
+        bindText(stmt, 11, iso.string(from: profile.createdAt))
+        sqlite3_step(stmt)
+        sqlite3_finalize(stmt)
+        for rule in profile.rules { try saveRule(rule) }
+    }
+
+    // MARK: - 9. fetchAllProfiles
+
+    func fetchAllProfiles(tenantId: String) -> [LensProfile] {
+        let sql = """
+            SELECT id, tenant_id, name, description, trigger_type, dataset_type,
+                   dataset_config_json, tone, is_active, is_system, created_at
+            FROM   lens_profiles
+            WHERE  tenant_id = ?
+            ORDER  BY is_system DESC, created_at ASC;
+        """
+        guard let stmt = prepare(sql) else { return [] }
+        bindText(stmt, 1, tenantId)
+        var profiles: [LensProfile] = []
+        while sqlite3_step(stmt) == SQLITE_ROW {
+            guard let id = UUID(uuidString: colString(stmt, 0)) else { continue }
+            profiles.append(LensProfile(
+                id:               id,
+                tenantId:         colString(stmt, 1),
+                name:             colString(stmt, 2),
+                description:      colString(stmt, 3),
+                triggerType:      TriggerType(rawValue: colString(stmt, 4))  ?? .visionAI,
+                datasetType:      DatasetType(rawValue: colString(stmt, 5))  ?? .llmOnly,
+                datasetConfigJSON: colStringOrNil(stmt, 6),
+                tone:             ToneType(rawValue: colString(stmt, 7))     ?? .coach,
+                isActive:         sqlite3_column_int(stmt, 8)  != 0,
+                isSystem:         sqlite3_column_int(stmt, 9)  != 0,
+                createdAt:        iso.date(from: colString(stmt, 10))        ?? Date(),
+                rules:            fetchRules(profileId: id)
+            ))
+        }
+        sqlite3_finalize(stmt)
+        return profiles
+    }
+
+    // MARK: - 10. fetchActiveProfile
+
+    func fetchActiveProfile(tenantId: String) -> LensProfile? {
+        let sql = """
+            SELECT id, tenant_id, name, description, trigger_type, dataset_type,
+                   dataset_config_json, tone, is_active, is_system, created_at
+            FROM   lens_profiles
+            WHERE  tenant_id = ? AND is_active = 1
+            LIMIT  1;
+        """
+        guard let stmt = prepare(sql) else { return nil }
+        bindText(stmt, 1, tenantId)
+        guard sqlite3_step(stmt) == SQLITE_ROW,
+              let id = UUID(uuidString: colString(stmt, 0)) else {
+            sqlite3_finalize(stmt)
+            return nil
+        }
+        let profile = LensProfile(
+            id:               id,
+            tenantId:         colString(stmt, 1),
+            name:             colString(stmt, 2),
+            description:      colString(stmt, 3),
+            triggerType:      TriggerType(rawValue: colString(stmt, 4))  ?? .visionAI,
+            datasetType:      DatasetType(rawValue: colString(stmt, 5))  ?? .llmOnly,
+            datasetConfigJSON: colStringOrNil(stmt, 6),
+            tone:             ToneType(rawValue: colString(stmt, 7))     ?? .coach,
+            isActive:         sqlite3_column_int(stmt, 8)  != 0,
+            isSystem:         sqlite3_column_int(stmt, 9)  != 0,
+            createdAt:        iso.date(from: colString(stmt, 10))        ?? Date(),
+            rules:            fetchRules(profileId: id)
+        )
+        sqlite3_finalize(stmt)
+        return profile
+    }
+
+    // MARK: - 11. setActiveProfile (atomic swap)
+
+    func setActiveProfile(id: UUID, tenantId: String) throws {
+        execute("BEGIN TRANSACTION;")
+        let deactivate = "UPDATE lens_profiles SET is_active = 0 WHERE tenant_id = ?;"
+        guard let s1 = prepare(deactivate) else {
+            execute("ROLLBACK;")
+            throw DatabaseError.writeError("Could not prepare deactivate statement")
+        }
+        bindText(s1, 1, tenantId)
+        sqlite3_step(s1); sqlite3_finalize(s1)
+
+        let activate = "UPDATE lens_profiles SET is_active = 1 WHERE id = ? AND tenant_id = ?;"
+        guard let s2 = prepare(activate) else {
+            execute("ROLLBACK;")
+            throw DatabaseError.writeError("Could not prepare activate statement")
+        }
+        bindText(s2, 1, id.uuidString)
+        bindText(s2, 2, tenantId)
+        sqlite3_step(s2); sqlite3_finalize(s2)
+        execute("COMMIT;")
+    }
+
+    // MARK: - 12. deleteProfile
+
+    func deleteProfile(id: UUID) throws {
+        let checkSQL = "SELECT is_system FROM lens_profiles WHERE id = ?;"
+        guard let check = prepare(checkSQL) else { throw DatabaseError.profileNotFound }
+        bindText(check, 1, id.uuidString)
+        guard sqlite3_step(check) == SQLITE_ROW else {
+            sqlite3_finalize(check)
+            throw DatabaseError.profileNotFound
+        }
+        let isSystem = sqlite3_column_int(check, 0) != 0
+        sqlite3_finalize(check)
+        guard !isSystem else { throw DatabaseError.systemProfileCannotBeDeleted }
+
+        let del = "DELETE FROM lens_profiles WHERE id = ?;"
+        guard let stmt = prepare(del) else {
+            throw DatabaseError.writeError("Could not prepare delete statement")
+        }
+        bindText(stmt, 1, id.uuidString)
+        sqlite3_step(stmt); sqlite3_finalize(stmt)
+    }
+
+    // MARK: - 13. saveRule
+
+    func saveRule(_ rule: Rule) throws {
+        let sql = """
+            INSERT OR REPLACE INTO profile_rules
+              (id, profile_id, tenant_id, trigger, action_type,
+               action_config_json, response_template, priority, is_active)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+        """
+        guard let stmt = prepare(sql) else {
+            throw DatabaseError.writeError("Could not prepare profile_rules insert")
+        }
+        bindText(stmt, 1, rule.id.uuidString)
+        bindText(stmt, 2, rule.profileId.uuidString)
+        bindText(stmt, 3, rule.tenantId)
+        bindText(stmt, 4, rule.trigger)
+        bindText(stmt, 5, rule.actionType.rawValue)
+        if let cfg = rule.actionConfigJSON   { bindText(stmt, 6, cfg)  } else { sqlite3_bind_null(stmt, 6) }
+        if let tmpl = rule.responseTemplate  { bindText(stmt, 7, tmpl) } else { sqlite3_bind_null(stmt, 7) }
+        sqlite3_bind_int(stmt, 8, Int32(rule.priority))
+        sqlite3_bind_int(stmt, 9, rule.isActive ? 1 : 0)
+        sqlite3_step(stmt); sqlite3_finalize(stmt)
+    }
+
+    // MARK: - 14. fetchRules
+
+    func fetchRules(profileId: UUID) -> [Rule] {
+        let sql = """
+            SELECT id, profile_id, tenant_id, trigger, action_type,
+                   action_config_json, response_template, priority, is_active
+            FROM   profile_rules
+            WHERE  profile_id = ?
+            ORDER  BY priority ASC;
+        """
+        guard let stmt = prepare(sql) else { return [] }
+        bindText(stmt, 1, profileId.uuidString)
+        var rules: [Rule] = []
+        while sqlite3_step(stmt) == SQLITE_ROW {
+            guard
+                let id  = UUID(uuidString: colString(stmt, 0)),
+                let pid = UUID(uuidString: colString(stmt, 1)),
+                let at  = ActionType(rawValue: colString(stmt, 4))
+            else { continue }
+            rules.append(Rule(
+                id:               id,
+                profileId:        pid,
+                tenantId:         colString(stmt, 2),
+                trigger:          colString(stmt, 3),
+                actionType:       at,
+                actionConfigJSON: colStringOrNil(stmt, 5),
+                responseTemplate: colStringOrNil(stmt, 6),
+                priority:         Int(sqlite3_column_int(stmt, 7)),
+                isActive:         sqlite3_column_int(stmt, 8) != 0
+            ))
+        }
+        sqlite3_finalize(stmt)
+        return rules
+    }
+
+    // MARK: - 15. deleteRule
+
+    func deleteRule(id: UUID) throws {
+        let sql = "DELETE FROM profile_rules WHERE id = ?;"
+        guard let stmt = prepare(sql) else {
+            throw DatabaseError.writeError("Could not prepare delete rule statement")
+        }
+        bindText(stmt, 1, id.uuidString)
+        sqlite3_step(stmt); sqlite3_finalize(stmt)
+    }
+
+    // MARK: - 16. saveTraceEvent
 
     func saveTraceEvent(_ event: TraceEvent) {
         deleteStaleTraceEvents()   // enforce 7-day rolling window on every write
@@ -272,6 +500,35 @@ actor DatabaseManager {
                 ergonomic_alerts INTEGER,
                 llm_summary      TEXT,
                 UNIQUE(profile_id, date)
+            );
+        """)
+        execute("""
+            CREATE TABLE IF NOT EXISTS lens_profiles (
+                id                  TEXT PRIMARY KEY,
+                tenant_id           TEXT NOT NULL,
+                name                TEXT NOT NULL,
+                description         TEXT,
+                trigger_type        TEXT NOT NULL,
+                dataset_type        TEXT NOT NULL,
+                dataset_config_json TEXT,
+                tone                TEXT NOT NULL,
+                is_active           INTEGER DEFAULT 1,
+                is_system           INTEGER DEFAULT 0,
+                created_at          TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        """)
+        execute("""
+            CREATE TABLE IF NOT EXISTS profile_rules (
+                id                  TEXT PRIMARY KEY,
+                profile_id          TEXT NOT NULL
+                    REFERENCES lens_profiles(id) ON DELETE CASCADE,
+                tenant_id           TEXT NOT NULL,
+                trigger             TEXT NOT NULL,
+                action_type         TEXT NOT NULL,
+                action_config_json  TEXT,
+                response_template   TEXT,
+                priority            INTEGER DEFAULT 0,
+                is_active           INTEGER DEFAULT 1
             );
         """)
         execute("""

@@ -20,6 +20,7 @@
 		6C71F586476367133158E5E3 /* RulesEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5037EAE7C12F3673DF5815C /* RulesEngine.swift */; };
 		74A9B1D5EFE330B466D7455B /* MWDATCamera in Frameworks */ = {isa = PBXBuildFile; productRef = 7AD3BE926E45B8C10F6E245E /* MWDATCamera */; };
 		82F85B5146001ACE4B294F3E /* Profile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 346AD41B590E713BFFAA7B17 /* Profile.swift */; };
+		84D633FADB8BD7A5015243CF /* LensProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EAED14FF9DE842A6C3E46DE /* LensProfile.swift */; };
 		86DFF63F868E452BBCF7157D /* ResponsePlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = D29DC3D26AA8E2E1971F0D19 /* ResponsePlayer.swift */; };
 		904475F47649E1F36FB38627 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC49B26102B801354564AE7D /* ContentView.swift */; };
 		A53FB4D4916ACA7E0999A803 /* CameraStreamManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1EED7DAF80E1D6A6163B15C9 /* CameraStreamManager.swift */; };
@@ -33,6 +34,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		0EAED14FF9DE842A6C3E46DE /* LensProfile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LensProfile.swift; sourceTree = "<group>"; };
 		156B39F025F2C25B8745C0A3 /* HealthAnalysis.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthAnalysis.swift; sourceTree = "<group>"; };
 		193108782A105A84CE19C117 /* DatabaseManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatabaseManager.swift; sourceTree = "<group>"; };
 		19754F35CBA5F53A5D61BC83 /* libsqlite3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.tbd; path = usr/lib/libsqlite3.tbd; sourceTree = SDKROOT; };
@@ -164,6 +166,7 @@
 			isa = PBXGroup;
 			children = (
 				156B39F025F2C25B8745C0A3 /* HealthAnalysis.swift */,
+				0EAED14FF9DE842A6C3E46DE /* LensProfile.swift */,
 				346AD41B590E713BFFAA7B17 /* Profile.swift */,
 				97F479D907A9626B8A6B5523 /* Records.swift */,
 				D94543960094D6255D077B6C /* Rule.swift */,
@@ -279,6 +282,7 @@
 				AA9FF26CD374CBD064408ECF /* HealthAnalysis.swift in Sources */,
 				2480742D976ECD14C8C3C1BA /* HealthDetectionManager.swift in Sources */,
 				E6229E27AAE32E491644290F /* LensAwareApp.swift in Sources */,
+				84D633FADB8BD7A5015243CF /* LensProfile.swift in Sources */,
 				5A5B1D0BCBDF539D3C3757A5 /* LiveDetectionView.swift in Sources */,
 				82F85B5146001ACE4B294F3E /* Profile.swift in Sources */,
 				124274D349CEA6E2C99DDB9A /* Records.swift in Sources */,

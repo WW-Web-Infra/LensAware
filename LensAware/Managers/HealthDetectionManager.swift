@@ -1,19 +1,20 @@
 import Foundation
 
-// MARK: - Detection state
+// MARK: - Capture state
 
-enum HealthDetectionState: Equatable {
+enum CaptureState: Equatable {
     case idle
+    case capturing
     case analyzing
-    case responded(LensAnalysis)
-    case failed(String)
+    case responding
+    case error(String)
 
-    static func == (lhs: HealthDetectionState, rhs: HealthDetectionState) -> Bool {
+    static func == (lhs: CaptureState, rhs: CaptureState) -> Bool {
         switch (lhs, rhs) {
-        case (.idle, .idle), (.analyzing, .analyzing): return true
-        case (.responded, .responded):                 return true
-        case (.failed(let a), .failed(let b)):         return a == b
-        default:                                       return false
+        case (.idle, .idle), (.capturing, .capturing),
+             (.analyzing, .analyzing), (.responding, .responding): return true
+        case (.error(let a), .error(let b)):                        return a == b
+        default:                                                     return false
         }
     }
 }
@@ -22,13 +23,13 @@ enum HealthDetectionState: Equatable {
 
 @MainActor
 final class HealthDetectionManager: ObservableObject {
-    @Published private(set) var detectionState: HealthDetectionState = .idle
-    @Published private(set) var lastResponse: LensAnalysis?
+    @Published private(set) var captureState: CaptureState = .idle
+    @Published private(set) var lastAnalysis: LensAnalysis?
 
     private let visionService: ClaudeVisionService?
-    private let rulesEngine     = RulesEngine()
-    private let responsePlayer  = ResponsePlayer()
-    private let dbManager       = DatabaseManager()
+    private let rulesEngine    = RulesEngine()
+    private let responsePlayer = ResponsePlayer()
+    private let dbManager      = DatabaseManager()
 
     private let profileId = 1
 
@@ -39,42 +40,71 @@ final class HealthDetectionManager: ObservableObject {
             visionService = try ClaudeVisionService()
         } catch {
             visionService = nil
-            detectionState = .failed(error.localizedDescription)
+            captureState = .error(error.localizedDescription)
+        }
+
+        // Transition responding → idle when the audio queue drains.
+        responsePlayer.onPlaybackComplete = { [weak self] in
+            Task { @MainActor [weak self] in
+                guard let self else { return }
+                if case .responding = self.captureState { self.captureState = .idle }
+            }
         }
     }
 
-    // MARK: - Public
+    // MARK: - Setup (call once on app launch)
 
-    func resetState() {
-        detectionState = .idle
+    func setup() async {
+        await dbManager.setupDatabase()
     }
+
+    // MARK: - Manual capture (button-tap path)
+
+    func captureAndAnalyze(_ imageData: Data) async {
+        guard case .idle = captureState else { return }
+        captureState = .capturing
+        responsePlayer.playAcknowledgement()
+        await runPipeline(imageData)
+    }
+
+    // MARK: - Public helpers
+
+    func resetCaptureState() { captureState = .idle }
+    func clearLastAnalysis()  { lastAnalysis = nil  }
 }
 
-// MARK: - CameraFrameDelegate
+// MARK: - CameraFrameDelegate (streaming / automatic path)
 
 extension HealthDetectionManager: CameraFrameDelegate {
     nonisolated func didReceiveFrame(_ imageData: Data) {
-        Task { @MainActor in
-            await processFrame(imageData)
-        }
+        Task { @MainActor in await captureAndAnalyze(imageData) }
     }
+}
 
-    private func processFrame(_ imageData: Data) async {
-        guard let service = visionService else { return }
-        guard case .idle = detectionState else { return }
+// MARK: - Shared analysis pipeline
 
-        detectionState = .analyzing
-        responsePlayer.playAcknowledgement()
+private extension HealthDetectionManager {
+    func runPipeline(_ imageData: Data) async {
+        guard let service = visionService else {
+            captureState = .error("Vision service unavailable.")
+            return
+        }
+
+        captureState = .analyzing
 
         do {
             let analysis     = try await service.analyze(imageData: imageData)
-            let activeRules  = rulesEngine.defaultHealthRules()
-            let audioStrings = rulesEngine.evaluate(analysis: analysis, rules: activeRules)
+            let rules        = rulesEngine.defaultHealthRules()
+            let audioStrings = rulesEngine.evaluate(analysis: analysis, rules: rules)
 
-            lastResponse   = analysis
-            detectionState = .responded(analysis)
+            lastAnalysis = analysis
 
-            responsePlayer.play(audioStrings)
+            if audioStrings.isEmpty {
+                captureState = .idle
+            } else {
+                captureState = .responding
+                responsePlayer.play(audioStrings)
+            }
 
             Task.detached { [dbManager, profileId, analysis] in
                 if analysis.foodAnalysis.foodDetected {
@@ -108,10 +138,10 @@ extension HealthDetectionManager: CameraFrameDelegate {
                 }
             }
         } catch {
-            detectionState = .failed(error.localizedDescription)
+            captureState = .error(error.localizedDescription)
             Task {
                 try? await Task.sleep(nanoseconds: 5_000_000_000)
-                if case .failed = detectionState { detectionState = .idle }
+                if case .error = captureState { captureState = .idle }
             }
         }
     }

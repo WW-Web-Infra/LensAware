@@ -7,6 +7,10 @@ final class ResponsePlayer: NSObject {
 
     var silentMode = false
 
+    /// Called when the last queued utterance finishes (or the queue is empty after a stop).
+    /// HealthDetectionManager uses this to transition responding → idle.
+    var onPlaybackComplete: (() -> Void)?
+
     private let synthesizer = AVSpeechSynthesizer()
 
     // Each item in the pending queue carries its text and priority context.
@@ -75,6 +79,7 @@ final class ResponsePlayer: NSObject {
     private func playNext() {
         guard !queue.isEmpty else {
             currentIsErgonomic = false
+            onPlaybackComplete?()
             return
         }
         let item = queue.removeFirst()

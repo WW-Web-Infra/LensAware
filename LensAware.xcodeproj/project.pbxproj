@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		0C46D36EDC22AA243D8160BC /* GlassesManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5379DE5EB8F7EB58A581BDF5 /* GlassesManager.swift */; };
 		0E33B2A4D289CD29B3915F02 /* AudioManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 502C8DA6BFDB9ADB3AB90BB7 /* AudioManager.swift */; };
+		124274D349CEA6E2C99DDB9A /* Records.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97F479D907A9626B8A6B5523 /* Records.swift */; };
 		2480742D976ECD14C8C3C1BA /* HealthDetectionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73322A4B44F4991B621AAE07 /* HealthDetectionManager.swift */; };
 		3DDD2EDACA346B24E84D6509 /* Config.plist in Resources */ = {isa = PBXBuildFile; fileRef = B8AC8E496DCB97BDCC6B5643 /* Config.plist */; };
 		4653B2DE8D66366B34AEECF0 /* MWDATCore in Frameworks */ = {isa = PBXBuildFile; productRef = 93F10253B82174B1FA2537A1 /* MWDATCore */; };
@@ -41,6 +42,7 @@
 		5AF2A7C29A72F588431FDA60 /* LensAware.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = LensAware.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		73322A4B44F4991B621AAE07 /* HealthDetectionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthDetectionManager.swift; sourceTree = "<group>"; };
 		95D2C2DD1710052AB5372A28 /* ConnectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectionView.swift; sourceTree = "<group>"; };
+		97F479D907A9626B8A6B5523 /* Records.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Records.swift; sourceTree = "<group>"; };
 		A59E3F2BE85DE31DA115633A /* LiveDetectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveDetectionView.swift; sourceTree = "<group>"; };
 		ADC3B66E0B13B2CF38085AFC /* combined_analysis.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = combined_analysis.txt; sourceTree = "<group>"; };
 		B8AC8E496DCB97BDCC6B5643 /* Config.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Config.plist; sourceTree = "<group>"; };
@@ -160,6 +162,7 @@
 			children = (
 				156B39F025F2C25B8745C0A3 /* HealthAnalysis.swift */,
 				346AD41B590E713BFFAA7B17 /* Profile.swift */,
+				97F479D907A9626B8A6B5523 /* Records.swift */,
 				D94543960094D6255D077B6C /* Rule.swift */,
 			);
 			path = Models;
@@ -274,6 +277,7 @@
 				E6229E27AAE32E491644290F /* LensAwareApp.swift in Sources */,
 				5A5B1D0BCBDF539D3C3757A5 /* LiveDetectionView.swift in Sources */,
 				82F85B5146001ACE4B294F3E /* Profile.swift in Sources */,
+				124274D349CEA6E2C99DDB9A /* Records.swift in Sources */,
 				86DFF63F868E452BBCF7157D /* ResponsePlayer.swift in Sources */,
 				FAFA76A3FF9C71CBAA328315 /* Rule.swift in Sources */,
 				6C71F586476367133158E5E3 /* RulesEngine.swift in Sources */,

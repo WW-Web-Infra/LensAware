@@ -26,10 +26,9 @@ final class HealthDetectionManager: ObservableObject {
     @Published private(set) var lastResponse: LensAnalysis?
 
     private let visionService: ClaudeVisionService?
-    private let rulesEngine    = RulesEngine()
-    private let audioManager   = AudioManager()
-    private let dbManager      = DatabaseManager()
-    private lazy var responsePlayer = ResponsePlayer(audioManager: audioManager)
+    private let rulesEngine     = RulesEngine()
+    private let responsePlayer  = ResponsePlayer()
+    private let dbManager       = DatabaseManager()
 
     private let profileId = 1
 
@@ -65,6 +64,7 @@ extension HealthDetectionManager: CameraFrameDelegate {
         guard case .idle = detectionState else { return }
 
         detectionState = .analyzing
+        responsePlayer.playAcknowledgement()
 
         do {
             let analysis     = try await service.analyze(imageData: imageData)

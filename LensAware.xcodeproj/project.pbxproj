@@ -12,6 +12,7 @@
 		124274D349CEA6E2C99DDB9A /* Records.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97F479D907A9626B8A6B5523 /* Records.swift */; };
 		2480742D976ECD14C8C3C1BA /* HealthDetectionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73322A4B44F4991B621AAE07 /* HealthDetectionManager.swift */; };
 		3DDD2EDACA346B24E84D6509 /* Config.plist in Resources */ = {isa = PBXBuildFile; fileRef = B8AC8E496DCB97BDCC6B5643 /* Config.plist */; };
+		44CF0BDC0866B50AD3423BCA /* AnalyticsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24EBF991D093C9133DFB0A6A /* AnalyticsManager.swift */; };
 		4653B2DE8D66366B34AEECF0 /* MWDATCore in Frameworks */ = {isa = PBXBuildFile; productRef = 93F10253B82174B1FA2537A1 /* MWDATCore */; };
 		49DEF226BB840AF4C75B05A6 /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 19754F35CBA5F53A5D61BC83 /* libsqlite3.tbd */; };
 		5A5B1D0BCBDF539D3C3757A5 /* LiveDetectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A59E3F2BE85DE31DA115633A /* LiveDetectionView.swift */; };
@@ -36,6 +37,7 @@
 		193108782A105A84CE19C117 /* DatabaseManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatabaseManager.swift; sourceTree = "<group>"; };
 		19754F35CBA5F53A5D61BC83 /* libsqlite3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.tbd; path = usr/lib/libsqlite3.tbd; sourceTree = SDKROOT; };
 		1EED7DAF80E1D6A6163B15C9 /* CameraStreamManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraStreamManager.swift; sourceTree = "<group>"; };
+		24EBF991D093C9133DFB0A6A /* AnalyticsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalyticsManager.swift; sourceTree = "<group>"; };
 		346AD41B590E713BFFAA7B17 /* Profile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Profile.swift; sourceTree = "<group>"; };
 		502C8DA6BFDB9ADB3AB90BB7 /* AudioManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioManager.swift; sourceTree = "<group>"; };
 		5379DE5EB8F7EB58A581BDF5 /* GlassesManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlassesManager.swift; sourceTree = "<group>"; };
@@ -73,6 +75,7 @@
 		0CEC941D8105E1014FAC5329 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				24EBF991D093C9133DFB0A6A /* AnalyticsManager.swift */,
 				FCF30517C53F4ED735477709 /* ClaudeVisionService.swift */,
 				193108782A105A84CE19C117 /* DatabaseManager.swift */,
 				D29DC3D26AA8E2E1971F0D19 /* ResponsePlayer.swift */,
@@ -265,6 +268,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				44CF0BDC0866B50AD3423BCA /* AnalyticsManager.swift in Sources */,
 				0E33B2A4D289CD29B3915F02 /* AudioManager.swift in Sources */,
 				A53FB4D4916ACA7E0999A803 /* CameraStreamManager.swift in Sources */,
 				B57F304B2B29F6D285B95C71 /* ClaudeVisionService.swift in Sources */,

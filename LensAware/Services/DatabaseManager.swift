@@ -184,6 +184,46 @@ actor DatabaseManager {
         sqlite3_finalize(stmt)
     }
 
+    // MARK: - 8. saveTraceEvent
+
+    func saveTraceEvent(_ event: TraceEvent) {
+        deleteStaleTraceEvents()   // enforce 7-day rolling window on every write
+        let sql = """
+            INSERT OR REPLACE INTO trace_events
+              (id, timestamp, stage, duration_ms, input_tokens, output_tokens,
+               estimated_cost_usd, success, error_message, date)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+        """
+        guard let stmt = prepare(sql) else { return }
+        bindText(stmt, 1,  event.id.uuidString)
+        bindText(stmt, 2,  iso.string(from: event.timestamp))
+        bindText(stmt, 3,  event.stage)
+        sqlite3_bind_int(stmt,    4, Int32(event.durationMs))
+        sqlite3_bind_int(stmt,    5, Int32(event.inputTokens))
+        sqlite3_bind_int(stmt,    6, Int32(event.outputTokens))
+        sqlite3_bind_double(stmt, 7, event.estimatedCostUSD)
+        sqlite3_bind_int(stmt,    8, event.success ? 1 : 0)
+        if let msg = event.errorMessage { bindText(stmt, 9, msg) } else { sqlite3_bind_null(stmt, 9) }
+        bindText(stmt, 10, datePart(of: event.timestamp))
+        sqlite3_step(stmt)
+        sqlite3_finalize(stmt)
+    }
+
+    // MARK: - 9. fetchTodayTotalCost
+
+    func fetchTodayTotalCost() -> Double {
+        let sql = """
+            SELECT COALESCE(SUM(estimated_cost_usd), 0.0)
+            FROM   trace_events
+            WHERE  date = ? AND success = 1;
+        """
+        guard let stmt = prepare(sql) else { return 0 }
+        bindText(stmt, 1, todayString())
+        let cost = sqlite3_step(stmt) == SQLITE_ROW ? sqlite3_column_double(stmt, 0) : 0.0
+        sqlite3_finalize(stmt)
+        return cost
+    }
+
     // MARK: - Schema (nonisolated — called from init and from setupDatabase)
 
     private nonisolated func createAllTables() {
@@ -234,6 +274,20 @@ actor DatabaseManager {
                 UNIQUE(profile_id, date)
             );
         """)
+        execute("""
+            CREATE TABLE IF NOT EXISTS trace_events (
+                id                  TEXT PRIMARY KEY,
+                timestamp           TIMESTAMP NOT NULL,
+                stage               TEXT NOT NULL,
+                duration_ms         INTEGER NOT NULL,
+                input_tokens        INTEGER NOT NULL,
+                output_tokens       INTEGER NOT NULL,
+                estimated_cost_usd  REAL NOT NULL,
+                success             INTEGER NOT NULL,
+                error_message       TEXT,
+                date                DATE NOT NULL
+            );
+        """)
     }
 
     // MARK: - Private helpers
@@ -273,9 +327,17 @@ actor DatabaseManager {
 
     // "yyyy-MM-dd" string for today — used in WHERE date(...) = ? queries
     private func todayString() -> String {
+        datePart(of: Date())
+    }
+
+    private func datePart(of date: Date) -> String {
         let f = DateFormatter()
         f.dateFormat = "yyyy-MM-dd"
         f.locale = Locale(identifier: "en_US_POSIX")
-        return f.string(from: Date())
+        return f.string(from: date)
+    }
+
+    private func deleteStaleTraceEvents() {
+        execute("DELETE FROM trace_events WHERE date < date('now', '-7 days');")
     }
 }

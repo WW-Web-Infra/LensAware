@@ -2,6 +2,9 @@ import Foundation
 import UIKit
 import MWDATCore
 import MWDATCamera
+import os.log
+
+private let streamLog = Logger(subsystem: "com.lensaware", category: "CameraStream")
 
 // MARK: - Stream state
 
@@ -49,27 +52,40 @@ final class CameraStreamManager: ObservableObject {
     func startStream() {
         switch streamState {
         case .idle, .stopped, .error: break
-        default: return
+        default:
+            streamLog.debug("startStream() skipped — already in state: \(String(describing: self.streamState))")
+            return
         }
 
+        streamLog.info("startStream() called — entering .starting")
         streamState = .starting
         lastProcessedTime = .distantPast
         hasReceivedFirstFrame = false
 
         let wearables = Wearables.shared
+        let regState  = wearables.registrationState
+        streamLog.info("SDK registrationState at stream start: \(String(describing: regState))")
+
+        let devices = wearables.devices
+        streamLog.info("SDK devices at stream start: \(devices)")
+
         let selector = AutoDeviceSelector(wearables: wearables)
         let config = StreamSessionConfig(videoCodec: .raw, resolution: .low, frameRate: 15)
+        streamLog.debug("StreamSessionConfig: codec=raw resolution=low fps=15")
         let session = StreamSession(streamSessionConfig: config, deviceSelector: selector)
         streamSession = session
 
         stateToken = session.statePublisher.listen { [weak self] state in
             Task { @MainActor [weak self] in
                 guard let self else { return }
+                streamLog.info("Session state → \(String(describing: state))")
                 switch state {
                 case .streaming:
                     self.streamState = .streaming
                     self.startNoFramesWatchdog()
-                case .waitingForDevice: self.streamState = .waitingForDevice
+                case .waitingForDevice:
+                    streamLog.warning("waitingForDevice — glasses not seen by SDK yet")
+                    self.streamState = .waitingForDevice
                 case .starting:         self.streamState = .starting
                 case .paused:           self.streamState = .paused
                 case .stopped:
@@ -91,6 +107,7 @@ final class CameraStreamManager: ObservableObject {
                 if !self.hasReceivedFirstFrame {
                     self.hasReceivedFirstFrame = true
                     self.noFramesWatchdog?.cancel()
+                    streamLog.info("First frame received — \(Int(image.size.width))×\(Int(image.size.height))")
                 }
                 self.lastFrame = image
                 self.processFrameIfNeeded(image)
@@ -99,25 +116,17 @@ final class CameraStreamManager: ObservableObject {
 
         errorToken = session.errorPublisher.listen { [weak self] error in
             Task { @MainActor [weak self] in
+                streamLog.error("Stream error: \(error)")
                 self?.noFramesWatchdog?.cancel()
                 self?.streamState = .error(error.localizedDescription)
             }
         }
 
         Task {
-            do {
-                var status = try await wearables.checkPermissionStatus(.camera)
-                if status != .granted {
-                    status = try await wearables.requestPermission(.camera)
-                }
-                guard status == .granted else {
-                    self.streamState = .error("Camera permission denied in Meta AI.")
-                    return
-                }
-            } catch {
-                // Attempt to start anyway
-            }
+            // Permission and XPC warm-up are handled by GlassesManager before the stream starts.
+            streamLog.info("Calling session.start()")
             await session.start()
+            streamLog.info("session.start() returned")
         }
     }
 
@@ -149,9 +158,11 @@ final class CameraStreamManager: ObservableObject {
 
     private func startNoFramesWatchdog() {
         noFramesWatchdog?.cancel()
+        streamLog.debug("Watchdog started — will fire in 10s if no frame arrives")
         noFramesWatchdog = Task {
             try? await Task.sleep(nanoseconds: 10_000_000_000)
             guard !Task.isCancelled, !hasReceivedFirstFrame else { return }
+            streamLog.error("Watchdog fired — SDK reported .streaming but no frames in 10s (camera locked?). Stopping.")
             stopStream()
         }
     }

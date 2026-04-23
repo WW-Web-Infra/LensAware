@@ -67,8 +67,6 @@ final class GlassesManager: ObservableObject {
                 break
             }
 
-            try? await Task.sleep(nanoseconds: 1_000_000_000)
-
             do {
                 try await wearables.startRegistration()
             } catch {
@@ -97,6 +95,32 @@ final class GlassesManager: ObservableObject {
         }
     }
 
+    // Restart observers and stream — does NOT re-register with Meta AI.
+    func reconnect() {
+        connectionState = .disconnected
+        availableDevices = []
+        registrationTask?.cancel()
+        devicesTask?.cancel()
+        startObservingRegistration()
+        startObservingDevices()
+        startConnection()
+    }
+
+    // Full re-registration: unregisters then opens Meta AI for fresh auth.
+    // Use this when the connection is permanently stuck (e.g. first-time setup).
+    func reregister() {
+        connectionState = .searching
+        Task {
+            try? await wearables.startUnregistration()
+            try? await Task.sleep(nanoseconds: 2_000_000_000)
+            do {
+                try await wearables.startRegistration()
+            } catch {
+                connectionState = .error("\(error)")
+            }
+        }
+    }
+
     func disconnect() {
         connectionState = .disconnected
         availableDevices = []
@@ -113,6 +137,17 @@ final class GlassesManager: ObservableObject {
         return nil
     }
 
+    // MARK: - Helpers
+
+    // Waits for registrationStateStream to emit the target state, with a 5s timeout.
+    private func waitForRegistrationState(_ target: RegistrationState) async {
+        let deadline = Date().addingTimeInterval(5)
+        for await state in wearables.registrationStateStream() {
+            if state == target { return }
+            if Date() > deadline { return }
+        }
+    }
+
     // MARK: - Always-on observers
 
     private func startObservingRegistration() {
@@ -121,10 +156,13 @@ final class GlassesManager: ObservableObject {
             for await state in wearables.registrationStateStream() {
                 guard !Task.isCancelled else { break }
                 self.registrationState = state
-                if state == .unavailable || state == .available {
+                switch state {
+                case .unavailable, .available:
                     if case .connected = self.connectionState {
                         self.connectionState = .disconnected
                     }
+                default:
+                    break
                 }
             }
         }

@@ -3,7 +3,8 @@ import MWDATCore
 
 @main
 struct LensAwareApp: App {
-    @StateObject private var glassesManager = GlassesManager()
+    @State   private var appState        = AppState()
+    @StateObject private var glassesManager   = GlassesManager()
     @StateObject private var detectionManager = HealthDetectionManager()
 
     init() {
@@ -14,10 +15,14 @@ struct LensAwareApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environment(appState)
                 .environmentObject(glassesManager)
                 .environmentObject(detectionManager)
                 .onOpenURL { url in
                     Task { await glassesManager.handleUrl(url) }
+                }
+                .onChange(of: glassesManager.isConnected) { _, connected in
+                    appState.isGlassesConnected = connected
                 }
         }
     }

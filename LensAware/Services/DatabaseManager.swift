@@ -452,6 +452,71 @@ actor DatabaseManager {
         return cost
     }
 
+    // MARK: - 17. saveQRScan
+
+    func saveQRScan(_ scan: QRScan) {
+        let sql = """
+            INSERT INTO qr_scans (timestamp, raw_value, url)
+            VALUES (?, ?, ?);
+        """
+        guard let stmt = prepare(sql) else { return }
+        bindText(stmt, 1, iso.string(from: scan.timestamp))
+        bindText(stmt, 2, scan.rawValue)
+        if let url = scan.url { bindText(stmt, 3, url) } else { sqlite3_bind_null(stmt, 3) }
+        sqlite3_step(stmt)
+        sqlite3_finalize(stmt)
+    }
+
+    // MARK: - 18. fetchTodayErgonomicEvents
+
+    func fetchTodayErgonomicEvents() -> [ErgonomicEvent] {
+        let sql = """
+            SELECT id, profile_id, timestamp, monitor_position, assessment, recommendation
+            FROM   ergonomic_events
+            WHERE  date(timestamp) = ?
+            ORDER  BY timestamp DESC;
+        """
+        guard let stmt = prepare(sql) else { return [] }
+        bindText(stmt, 1, todayString())
+        var rows: [ErgonomicEvent] = []
+        while sqlite3_step(stmt) == SQLITE_ROW {
+            rows.append(ErgonomicEvent(
+                id:              sqlite3_column_int64(stmt, 0),
+                profileId:       sqlite3_column_int64(stmt, 1),
+                timestamp:       iso.date(from: colString(stmt, 2)) ?? Date(),
+                monitorPosition: colString(stmt, 3),
+                assessment:      colString(stmt, 4),
+                recommendation:  colString(stmt, 5)
+            ))
+        }
+        sqlite3_finalize(stmt)
+        return rows
+    }
+
+    // MARK: - 19. fetchRecentQRScans
+
+    func fetchRecentQRScans(limit: Int = 20) -> [QRScan] {
+        let sql = """
+            SELECT id, timestamp, raw_value, url
+            FROM   qr_scans
+            ORDER  BY timestamp DESC
+            LIMIT  ?;
+        """
+        guard let stmt = prepare(sql) else { return [] }
+        sqlite3_bind_int(stmt, 1, Int32(limit))
+        var rows: [QRScan] = []
+        while sqlite3_step(stmt) == SQLITE_ROW {
+            rows.append(QRScan(
+                id:        sqlite3_column_int64(stmt, 0),
+                timestamp: iso.date(from: colString(stmt, 1)) ?? Date(),
+                rawValue:  colString(stmt, 2),
+                url:       colStringOrNil(stmt, 3)
+            ))
+        }
+        sqlite3_finalize(stmt)
+        return rows
+    }
+
     // MARK: - Schema (nonisolated — called from init and from setupDatabase)
 
     private nonisolated func createAllTables() {
@@ -543,6 +608,14 @@ actor DatabaseManager {
                 success             INTEGER NOT NULL,
                 error_message       TEXT,
                 date                DATE NOT NULL
+            );
+        """)
+        execute("""
+            CREATE TABLE IF NOT EXISTS qr_scans (
+                id        INTEGER PRIMARY KEY AUTOINCREMENT,
+                timestamp TIMESTAMP NOT NULL,
+                raw_value TEXT NOT NULL,
+                url       TEXT
             );
         """)
     }

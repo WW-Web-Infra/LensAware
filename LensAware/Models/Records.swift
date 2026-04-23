@@ -32,3 +32,10 @@ struct DailySummary: Sendable {
     let ergonomicAlerts: Int
     let llmSummary: String?
 }
+
+struct QRScan: Sendable {
+    let id: Int64?
+    let timestamp: Date
+    let rawValue: String
+    let url: String?
+}

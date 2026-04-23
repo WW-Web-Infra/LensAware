@@ -9,7 +9,9 @@
 /* Begin PBXBuildFile section */
 		0C46D36EDC22AA243D8160BC /* GlassesManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5379DE5EB8F7EB58A581BDF5 /* GlassesManager.swift */; };
 		0E33B2A4D289CD29B3915F02 /* AudioManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 502C8DA6BFDB9ADB3AB90BB7 /* AudioManager.swift */; };
+		10BDCF7566166654F0E3D87D /* ConnectionStatusPill.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05B1BA816979AF2E07A8D958 /* ConnectionStatusPill.swift */; };
 		124274D349CEA6E2C99DDB9A /* Records.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97F479D907A9626B8A6B5523 /* Records.swift */; };
+		1EA14BA3AEA284FC5A0439C8 /* HistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86A30D05ABF945223D13245F /* HistoryView.swift */; };
 		2480742D976ECD14C8C3C1BA /* HealthDetectionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73322A4B44F4991B621AAE07 /* HealthDetectionManager.swift */; };
 		3DDD2EDACA346B24E84D6509 /* Config.plist in Resources */ = {isa = PBXBuildFile; fileRef = B8AC8E496DCB97BDCC6B5643 /* Config.plist */; };
 		44CF0BDC0866B50AD3423BCA /* AnalyticsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24EBF991D093C9133DFB0A6A /* AnalyticsManager.swift */; };
@@ -19,21 +21,29 @@
 		680A8075F396F579FEC64DF7 /* combined_analysis.txt in Resources */ = {isa = PBXBuildFile; fileRef = ADC3B66E0B13B2CF38085AFC /* combined_analysis.txt */; };
 		6C71F586476367133158E5E3 /* RulesEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5037EAE7C12F3673DF5815C /* RulesEngine.swift */; };
 		74A9B1D5EFE330B466D7455B /* MWDATCamera in Frameworks */ = {isa = PBXBuildFile; productRef = 7AD3BE926E45B8C10F6E245E /* MWDATCamera */; };
+		77888CD752DB77272454E249 /* DetectionBadge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E12682A5EC4A583E9AA3395 /* DetectionBadge.swift */; };
 		82F85B5146001ACE4B294F3E /* Profile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 346AD41B590E713BFFAA7B17 /* Profile.swift */; };
 		84D633FADB8BD7A5015243CF /* LensProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EAED14FF9DE842A6C3E46DE /* LensProfile.swift */; };
 		86DFF63F868E452BBCF7157D /* ResponsePlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = D29DC3D26AA8E2E1971F0D19 /* ResponsePlayer.swift */; };
 		904475F47649E1F36FB38627 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC49B26102B801354564AE7D /* ContentView.swift */; };
+		925C5EE0BD9337461646E9F9 /* RulesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D16B37D0345BC545AB265FA7 /* RulesView.swift */; };
+		9FD5D760619DAC39854C6AD8 /* RuleRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = C60F2A6741716FFC2FC88D7C /* RuleRow.swift */; };
 		A53FB4D4916ACA7E0999A803 /* CameraStreamManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1EED7DAF80E1D6A6163B15C9 /* CameraStreamManager.swift */; };
 		AA9FF26CD374CBD064408ECF /* HealthAnalysis.swift in Sources */ = {isa = PBXBuildFile; fileRef = 156B39F025F2C25B8745C0A3 /* HealthAnalysis.swift */; };
 		B57F304B2B29F6D285B95C71 /* ClaudeVisionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FCF30517C53F4ED735477709 /* ClaudeVisionService.swift */; };
+		BCFC4F15055616D41603E412 /* DetectView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6183B71C6B6871B0D8C494AE /* DetectView.swift */; };
 		BE1756BC9547D05BB248A9FB /* rules.json in Resources */ = {isa = PBXBuildFile; fileRef = C66C227149CC6C2F98B27E89 /* rules.json */; };
 		C45F2F038E57C1382E221585 /* DatabaseManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 193108782A105A84CE19C117 /* DatabaseManager.swift */; };
+		D2E528339F1346B1BB7166BA /* StatCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE4A21E78D8A2975611D3F0A /* StatCard.swift */; };
+		D5EB61ACA1E5973F7CAF0EDE /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8CCE5113BD18787CADCFAF5 /* HomeView.swift */; };
+		E4B178A3D60DE73037204476 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = D06BDFAA349AF72075A7562A /* AppState.swift */; };
 		E6229E27AAE32E491644290F /* LensAwareApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = E173EAF63670126326DC7D27 /* LensAwareApp.swift */; };
 		FAFA76A3FF9C71CBAA328315 /* Rule.swift in Sources */ = {isa = PBXBuildFile; fileRef = D94543960094D6255D077B6C /* Rule.swift */; };
 		FC80AA413E5A045EA53C4E6B /* ConnectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95D2C2DD1710052AB5372A28 /* ConnectionView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		05B1BA816979AF2E07A8D958 /* ConnectionStatusPill.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectionStatusPill.swift; sourceTree = "<group>"; };
 		0EAED14FF9DE842A6C3E46DE /* LensProfile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LensProfile.swift; sourceTree = "<group>"; };
 		156B39F025F2C25B8745C0A3 /* HealthAnalysis.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthAnalysis.swift; sourceTree = "<group>"; };
 		193108782A105A84CE19C117 /* DatabaseManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatabaseManager.swift; sourceTree = "<group>"; };
@@ -44,13 +54,21 @@
 		502C8DA6BFDB9ADB3AB90BB7 /* AudioManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioManager.swift; sourceTree = "<group>"; };
 		5379DE5EB8F7EB58A581BDF5 /* GlassesManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlassesManager.swift; sourceTree = "<group>"; };
 		5AF2A7C29A72F588431FDA60 /* LensAware.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = LensAware.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		6183B71C6B6871B0D8C494AE /* DetectView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetectView.swift; sourceTree = "<group>"; };
 		73322A4B44F4991B621AAE07 /* HealthDetectionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthDetectionManager.swift; sourceTree = "<group>"; };
+		86A30D05ABF945223D13245F /* HistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryView.swift; sourceTree = "<group>"; };
 		95D2C2DD1710052AB5372A28 /* ConnectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectionView.swift; sourceTree = "<group>"; };
 		97F479D907A9626B8A6B5523 /* Records.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Records.swift; sourceTree = "<group>"; };
+		9E12682A5EC4A583E9AA3395 /* DetectionBadge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetectionBadge.swift; sourceTree = "<group>"; };
 		A59E3F2BE85DE31DA115633A /* LiveDetectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveDetectionView.swift; sourceTree = "<group>"; };
+		A8CCE5113BD18787CADCFAF5 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
 		ADC3B66E0B13B2CF38085AFC /* combined_analysis.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = combined_analysis.txt; sourceTree = "<group>"; };
 		B8AC8E496DCB97BDCC6B5643 /* Config.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Config.plist; sourceTree = "<group>"; };
+		BE4A21E78D8A2975611D3F0A /* StatCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatCard.swift; sourceTree = "<group>"; };
+		C60F2A6741716FFC2FC88D7C /* RuleRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RuleRow.swift; sourceTree = "<group>"; };
 		C66C227149CC6C2F98B27E89 /* rules.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = rules.json; sourceTree = "<group>"; };
+		D06BDFAA349AF72075A7562A /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
+		D16B37D0345BC545AB265FA7 /* RulesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RulesView.swift; sourceTree = "<group>"; };
 		D29DC3D26AA8E2E1971F0D19 /* ResponsePlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResponsePlayer.swift; sourceTree = "<group>"; };
 		D94543960094D6255D077B6C /* Rule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Rule.swift; sourceTree = "<group>"; };
 		E173EAF63670126326DC7D27 /* LensAwareApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LensAwareApp.swift; sourceTree = "<group>"; };
@@ -94,6 +112,17 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		20A9067F120A9490E5D74BC9 /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				05B1BA816979AF2E07A8D958 /* ConnectionStatusPill.swift */,
+				9E12682A5EC4A583E9AA3395 /* DetectionBadge.swift */,
+				C60F2A6741716FFC2FC88D7C /* RuleRow.swift */,
+				BE4A21E78D8A2975611D3F0A /* StatCard.swift */,
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
 		39B77CBAC9812C6514B19868 /* health */ = {
 			isa = PBXGroup;
 			children = (
@@ -105,6 +134,7 @@
 		3F5C0407699148EC4BDEBB3A /* LensAware */ = {
 			isa = PBXGroup;
 			children = (
+				D06BDFAA349AF72075A7562A /* AppState.swift */,
 				B8AC8E496DCB97BDCC6B5643 /* Config.plist */,
 				F9E22A7BC4CCE53555C80139 /* Info.plist */,
 				E173EAF63670126326DC7D27 /* LensAwareApp.swift */,
@@ -179,7 +209,12 @@
 			children = (
 				95D2C2DD1710052AB5372A28 /* ConnectionView.swift */,
 				FC49B26102B801354564AE7D /* ContentView.swift */,
+				6183B71C6B6871B0D8C494AE /* DetectView.swift */,
+				86A30D05ABF945223D13245F /* HistoryView.swift */,
+				A8CCE5113BD18787CADCFAF5 /* HomeView.swift */,
 				A59E3F2BE85DE31DA115633A /* LiveDetectionView.swift */,
+				D16B37D0345BC545AB265FA7 /* RulesView.swift */,
+				20A9067F120A9490E5D74BC9 /* Components */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -272,15 +307,21 @@
 			buildActionMask = 2147483647;
 			files = (
 				44CF0BDC0866B50AD3423BCA /* AnalyticsManager.swift in Sources */,
+				E4B178A3D60DE73037204476 /* AppState.swift in Sources */,
 				0E33B2A4D289CD29B3915F02 /* AudioManager.swift in Sources */,
 				A53FB4D4916ACA7E0999A803 /* CameraStreamManager.swift in Sources */,
 				B57F304B2B29F6D285B95C71 /* ClaudeVisionService.swift in Sources */,
+				10BDCF7566166654F0E3D87D /* ConnectionStatusPill.swift in Sources */,
 				FC80AA413E5A045EA53C4E6B /* ConnectionView.swift in Sources */,
 				904475F47649E1F36FB38627 /* ContentView.swift in Sources */,
 				C45F2F038E57C1382E221585 /* DatabaseManager.swift in Sources */,
+				BCFC4F15055616D41603E412 /* DetectView.swift in Sources */,
+				77888CD752DB77272454E249 /* DetectionBadge.swift in Sources */,
 				0C46D36EDC22AA243D8160BC /* GlassesManager.swift in Sources */,
 				AA9FF26CD374CBD064408ECF /* HealthAnalysis.swift in Sources */,
 				2480742D976ECD14C8C3C1BA /* HealthDetectionManager.swift in Sources */,
+				1EA14BA3AEA284FC5A0439C8 /* HistoryView.swift in Sources */,
+				D5EB61ACA1E5973F7CAF0EDE /* HomeView.swift in Sources */,
 				E6229E27AAE32E491644290F /* LensAwareApp.swift in Sources */,
 				84D633FADB8BD7A5015243CF /* LensProfile.swift in Sources */,
 				5A5B1D0BCBDF539D3C3757A5 /* LiveDetectionView.swift in Sources */,
@@ -288,7 +329,10 @@
 				124274D349CEA6E2C99DDB9A /* Records.swift in Sources */,
 				86DFF63F868E452BBCF7157D /* ResponsePlayer.swift in Sources */,
 				FAFA76A3FF9C71CBAA328315 /* Rule.swift in Sources */,
+				9FD5D760619DAC39854C6AD8 /* RuleRow.swift in Sources */,
 				6C71F586476367133158E5E3 /* RulesEngine.swift in Sources */,
+				925C5EE0BD9337461646E9F9 /* RulesView.swift in Sources */,
+				D2E528339F1346B1BB7166BA /* StatCard.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

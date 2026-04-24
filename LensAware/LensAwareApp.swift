@@ -6,9 +6,9 @@ struct LensAwareApp: App {
     @State   private var appState        = AppState()
     @StateObject private var glassesManager   = GlassesManager()
     @StateObject private var detectionManager = HealthDetectionManager()
+    @State   private var showOnboarding  = false
 
     init() {
-        // configure() throws WearablesError; alreadyConfigured is safe to ignore
         try? Wearables.configure()
     }
 
@@ -23,6 +23,22 @@ struct LensAwareApp: App {
                 }
                 .onChange(of: glassesManager.isConnected) { _, connected in
                     appState.isGlassesConnected = connected
+                }
+                .fullScreenCover(isPresented: $showOnboarding) {
+                    OnboardingView {
+                        UserDefaults.standard.set(true, forKey: "lensaware_onboarding_complete")
+                        showOnboarding = false
+                    }
+                    .environment(appState)
+                    .environmentObject(glassesManager)
+                }
+                .task {
+                    await appState.seedDefaultProfilesIfNeeded()
+                    await appState.setup()
+                    glassesManager.startConnection()
+                    if !UserDefaults.standard.bool(forKey: "lensaware_onboarding_complete") {
+                        showOnboarding = true
+                    }
                 }
         }
     }

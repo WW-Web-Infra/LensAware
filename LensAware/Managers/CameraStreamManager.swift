@@ -123,7 +123,23 @@ final class CameraStreamManager: ObservableObject {
         }
 
         Task {
-            // Permission and XPC warm-up are handled by GlassesManager before the stream starts.
+            let wearables = Wearables.shared
+            do {
+                var status = try await wearables.checkPermissionStatus(.camera)
+                if status != .granted {
+                    status = try await wearables.requestPermission(.camera)
+                }
+                guard status == .granted else {
+                    streamLog.error("Camera permission denied in Meta AI — aborting stream start")
+                    streamState = .error("Camera permission denied in Meta AI.")
+                    return
+                }
+            } catch {
+                // XPC relay is cold — proceed anyway.
+                // The caller is responsible for warming the relay via requestPermission
+                // before startStream() is invoked (reconnect() handles this).
+                streamLog.warning("checkPermissionStatus threw \(error) — starting anyway")
+            }
             streamLog.info("Calling session.start()")
             await session.start()
             streamLog.info("session.start() returned")

@@ -5,6 +5,8 @@ struct DetectView: View {
     @EnvironmentObject private var detectionManager: HealthDetectionManager
     @EnvironmentObject private var glassesManager: GlassesManager
 
+    @Environment(\.scenePhase) private var scenePhase
+
     @StateObject private var streamManager = CameraStreamManager()
     @State private var showProfilePicker = false
     @State private var showCreateProfileComingSoon = false
@@ -56,6 +58,33 @@ struct DetectView: View {
                 streamManager.stopStream()
             }
         }
+        .onChange(of: streamManager.streamState) { _, state in
+            // When the stream reaches waitingForDevice with no devices available,
+            // the devicesStream subscription was created before the XPC relay was
+            // warm and is a dead iterator. Resubscribing after the warm-up lets
+            // it receive the device list and self-heal.
+            guard case .waitingForDevice = state else { return }
+            guard glassesManager.availableDevices.isEmpty else { return }
+            glassesManager.refreshDeviceObserver()
+        }
+        .onChange(of: scenePhase) { _, phase in
+            guard phase == .active else { return }
+            guard !streamManager.isStreaming else { return }
+            // Always restart devicesStream on foreground — the iterator started during reconnect()
+            // was created on a cold XPC and is a dead iterator. Recreating it here, after the
+            // user has returned from Meta AI, ensures it runs on a warm XPC and delivers devices.
+            glassesManager.refreshDeviceObserver()
+            // If stream is already stuck in waitingForDevice, also restart it so a fresh
+            // AutoDeviceSelector is created. If stream is stopped/idle, the devices arriving
+            // via devicesStream → connectionState.connected → onChange(isGlassesConnected)
+            // will trigger startStream() naturally.
+            guard case .waitingForDevice = streamManager.streamState else { return }
+            streamManager.stopStream()
+            Task {
+                try? await Task.sleep(nanoseconds: 500_000_000)
+                streamManager.startStream()
+            }
+        }
         .onChange(of: glassesManager.availableDevices) { _, devices in
             // AutoDeviceSelector doesn't re-select once started with empty devices[].
             // When a real device appears, restart the stream so it can be picked up.
@@ -100,17 +129,27 @@ struct DetectView: View {
                             .font(.system(size: 80))
                             .foregroundStyle(.white.opacity(0.3))
 
-                        if !appState.isGlassesConnected {
-                            Text("Glasses not connected")
+                        if glassesManager.connectionState == .searching {
+                            ProgressView().tint(.white)
+                            Text("Connecting to glasses…")
                                 .font(.subheadline)
                                 .foregroundStyle(.white.opacity(0.7))
-                            Text("Open the Meta AI app and make sure your Ray-Bans are on.")
+                            Text("Make sure your Ray-Bans are on and Meta AI is running.")
                                 .font(.caption)
                                 .foregroundStyle(.white.opacity(0.4))
                                 .multilineTextAlignment(.center)
                                 .padding(.horizontal, 32)
-                            Button("Reconnect") {
-                                glassesManager.reconnect()
+                        } else if !appState.isGlassesConnected {
+                            Text("Glasses not connected")
+                                .font(.subheadline)
+                                .foregroundStyle(.white.opacity(0.7))
+                            Text("Make sure Meta AI is open and your Ray-Bans are on, then tap Connect.")
+                                .font(.caption)
+                                .foregroundStyle(.white.opacity(0.4))
+                                .multilineTextAlignment(.center)
+                                .padding(.horizontal, 32)
+                            Button("Connect Glasses") {
+                                glassesManager.startConnection()
                             }
                             .font(.subheadline.bold())
                             .foregroundStyle(.white)
@@ -169,16 +208,24 @@ struct DetectView: View {
                 .clipShape(Capsule())
             }
         case .waitingForDevice:
-            VStack(spacing: 8) {
+            VStack(spacing: 12) {
                 ProgressView().tint(.white)
                 Text("Waiting for glasses…")
                     .font(.caption)
                     .foregroundStyle(.white.opacity(0.7))
-                Text("Make sure your Ray-Bans are on and camera sharing is active in Meta AI.")
+                Text("In Meta AI → Settings → Connected Devices → enable Camera for LensAware, then tap Reconnect.")
                     .font(.caption2)
                     .foregroundStyle(.white.opacity(0.4))
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 32)
+                Button("Reconnect") {
+                    glassesManager.reregister()
+                }
+                .font(.subheadline.bold())
+                .foregroundStyle(.white)
+                .padding(.horizontal, 20).padding(.vertical, 10)
+                .background(Color.blue)
+                .clipShape(Capsule())
             }
         default:
             VStack(spacing: 8) {
@@ -194,8 +241,11 @@ struct DetectView: View {
 
     private var topBar: some View {
         HStack {
-            ConnectionStatusPill(isConnected: appState.isGlassesConnected) {
-                glassesManager.reconnect()
+            ConnectionStatusPill(
+                isConnected: appState.isGlassesConnected,
+                isSearching: glassesManager.connectionState == .searching
+            ) {
+                glassesManager.startConnection()
             }
 
             Spacer()

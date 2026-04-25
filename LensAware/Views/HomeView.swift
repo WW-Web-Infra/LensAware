@@ -9,7 +9,7 @@ struct HomeView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
 
-                    ConnectionStatusPill(isConnected: appState.isGlassesConnected) {
+                    ConnectionStatusPill(isConnected: appState.isGlassesConnected, isSearching: glassesManager.connectionState == .searching) {
                         if appState.isGlassesConnected {
                             glassesManager.disconnect()
                         } else {

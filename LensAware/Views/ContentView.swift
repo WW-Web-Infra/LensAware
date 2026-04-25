@@ -22,7 +22,6 @@ struct ContentView: View {
         .task {
             await appState.setup()
             await detectionManager.setup()
-            glassesManager.startConnection()
         }
     }
 }

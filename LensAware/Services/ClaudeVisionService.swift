@@ -46,10 +46,10 @@ actor ClaudeVisionService {
 
     func loadPrompt() -> String {
         guard
-            let url  = Bundle.main.url(forResource: "combined_analysis", withExtension: "txt", subdirectory: "Prompts/health"),
+            let url  = Bundle.main.url(forResource: "combined_analysis", withExtension: "txt"),
             let text = try? String(contentsOf: url, encoding: .utf8)
         else {
-            fatalError("combined_analysis.txt not found in bundle at Prompts/health/")
+            fatalError("combined_analysis.txt not found in bundle")
         }
         return text
     }

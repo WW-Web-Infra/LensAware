@@ -30,10 +30,7 @@ struct DetectView: View {
                 }
 
                 captureStatusLabel
-                    .padding(.bottom, 8)
-
-                captureButton
-                    .padding(.horizontal, 40)
+                    .padding(.bottom, 16)
 
                 if let profile = appState.activeProfile {
                     Text(profile.name)
@@ -46,13 +43,14 @@ struct DetectView: View {
         }
         .animation(.spring(response: 0.4, dampingFraction: 0.8), value: detectionManager.captureState)
         .task {
-            // Only start stream once glasses are connected — mirrors FloraLens SearchingView gate
+            streamManager.frameDelegate = detectionManager
             if appState.isGlassesConnected {
                 streamManager.startStream()
             }
         }
         .onChange(of: appState.isGlassesConnected) { _, connected in
             if connected {
+                streamManager.frameDelegate = detectionManager
                 streamManager.startStream()
             } else {
                 streamManager.stopStream()
@@ -276,7 +274,7 @@ struct DetectView: View {
     private var captureStatusLabel: some View {
         switch detectionManager.captureState {
         case .idle:
-            Text("Point glasses at food or your monitor")
+            Text("Look at something — detecting every 3 seconds")
                 .font(.caption)
                 .foregroundStyle(.white.opacity(0.6))
 
@@ -299,63 +297,19 @@ struct DetectView: View {
             .clipShape(Capsule())
 
         case .error(let message):
-            Text(message)
-                .font(.caption)
-                .foregroundStyle(.red.opacity(0.9))
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, 24)
-        }
-    }
-
-    // MARK: - Capture button
-
-    @ViewBuilder
-    private var captureButton: some View {
-        if case .error = detectionManager.captureState {
-            Button {
-                detectionManager.resetCaptureState()
-            } label: {
-                Label("Retry", systemImage: "arrow.clockwise")
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(Color.orange)
+            VStack(spacing: 8) {
+                Text(message)
+                    .font(.caption)
+                    .foregroundStyle(.red.opacity(0.9))
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 24)
+                Button("Retry") { detectionManager.resetCaptureState() }
+                    .font(.caption.bold())
                     .foregroundStyle(.white)
-                    .clipShape(RoundedRectangle(cornerRadius: 16))
+                    .padding(.horizontal, 16).padding(.vertical, 6)
+                    .background(Color.orange)
+                    .clipShape(Capsule())
             }
-        } else {
-            Button {
-                guard let frame = streamManager.lastFrame,
-                      let imageData = frame.jpegData(compressionQuality: 0.8)
-                else { return }
-                Task { await detectionManager.captureAndAnalyze(imageData) }
-            } label: {
-                HStack(spacing: 10) {
-                    if detectionManager.captureState == .idle {
-                        Image(systemName: "camera.circle.fill")
-                            .font(.title2)
-                    } else {
-                        ProgressView().tint(.white)
-                    }
-                    Text(captureButtonLabel)
-                        .font(.headline)
-                }
-                .frame(maxWidth: .infinity)
-                .padding()
-                .background(detectionManager.captureState == .idle ? Color.blue : Color.gray.opacity(0.4))
-                .foregroundStyle(.white)
-                .clipShape(RoundedRectangle(cornerRadius: 16))
-            }
-            .disabled(detectionManager.captureState != .idle)
-        }
-    }
-
-    private var captureButtonLabel: String {
-        switch detectionManager.captureState {
-        case .idle:       return "Capture"
-        case .capturing:  return "Capturing…"
-        case .analyzing:  return "Analysing…"
-        case .responding: return "Playing…"
-        case .error:      return "Error"
         }
     }
 

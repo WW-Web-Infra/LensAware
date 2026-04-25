@@ -76,7 +76,6 @@ final class HealthDetectionManager: ObservableObject {
     func captureAndAnalyze(_ imageData: Data) async {
         guard case .idle = captureState else { return }
         captureState = .capturing
-        responsePlayer.playAcknowledgement()
         await runPipeline(imageData)
     }
 

@@ -14,6 +14,7 @@ final class RulesEngine {
     /// Set after every process() call. HealthDetectionManager reads this
     /// to update its published lastAnalysis property.
     private(set) var lastVisionAnalysis: LensAnalysis?
+    private(set) var lastQRActions: [QRAction] = []
     /// Set on API failure; nil on success.
     private(set) var lastError: Error?
 
@@ -80,13 +81,14 @@ final class RulesEngine {
 
     func process(imageData: Data, profile: LensProfile) async -> [String] {
         lastVisionAnalysis = nil
+        lastQRActions = []
         lastError = nil
 
         switch profile.triggerType {
         case .visionAI:
             return await handleVisionAI(imageData: imageData, profile: profile)
         case .qrCode:
-            return ["QR scanning — coming in next build"]
+            return await handleQR(imageData: imageData, profile: profile)
         case .textOCR:
             return ["OCR — coming soon"]
         default:
@@ -108,6 +110,23 @@ final class RulesEngine {
         if await database.fetchActiveProfile(tenantId: tenantId) == nil {
             try? await database.setActiveProfile(id: Self.healthProfileID, tenantId: tenantId)
         }
+    }
+
+    // MARK: - Private: handleQR
+
+    private func handleQR(imageData: Data, profile: LensProfile) async -> [String] {
+        let service = QRScannerService()
+        guard let results = try? await service.detectQRCodes(in: imageData),
+              !results.isEmpty else {
+            return []
+        }
+        var actions: [QRAction] = []
+        for result in results {
+            let action = await service.processQRResult(result, profile: profile)
+            actions.append(action)
+        }
+        lastQRActions = actions
+        return actions.map(\.audioResponse)
     }
 
     // MARK: - Private: handleVisionAI

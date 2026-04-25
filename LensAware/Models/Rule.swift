@@ -11,7 +11,7 @@ enum ToneType: String, Codable, Sendable {
 
 // MARK: - Rule
 
-struct Rule: Codable, Identifiable, Sendable {
+struct Rule: Codable, Identifiable, Equatable, Sendable {
     let id: UUID
     let profileId: UUID
     let tenantId: String

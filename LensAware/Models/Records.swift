@@ -33,9 +33,13 @@ struct DailySummary: Sendable {
     let llmSummary: String?
 }
 
-struct QRScan: Sendable {
-    let id: Int64?
+struct QRScan: Codable, Identifiable, Sendable {
+    let id: UUID
+    let profileId: UUID
+    let tenantId: String
     let timestamp: Date
-    let rawValue: String
-    let url: String?
+    let qrValue: String
+    let audioResponse: String?
+    let actionTaken: String
+    let success: Bool
 }

@@ -7,6 +7,7 @@ struct DetectView: View {
 
     @StateObject private var streamManager = CameraStreamManager()
     @State private var showProfilePicker = false
+    @State private var showCreateProfileComingSoon = false
 
     var body: some View {
         ZStack(alignment: .bottom) {
@@ -31,7 +32,14 @@ struct DetectView: View {
 
                 captureButton
                     .padding(.horizontal, 40)
-                    .padding(.bottom, 48)
+
+                if let profile = appState.activeProfile {
+                    Text(profile.name)
+                        .font(.caption)
+                        .foregroundStyle(.white.opacity(0.5))
+                }
+
+                Spacer().frame(height: 48)
             }
         }
         .animation(.spring(response: 0.4, dampingFraction: 0.8), value: detectionManager.captureState)
@@ -63,8 +71,17 @@ struct DetectView: View {
             streamManager.stopStream()
             detectionManager.resetCaptureState()
         }
+        .onChange(of: appState.activeProfile) { _, profile in
+            guard let profile else { return }
+            detectionManager.setActiveProfile(profile)
+        }
         .sheet(isPresented: $showProfilePicker) {
             profilePickerSheet
+        }
+        .alert("Coming Soon", isPresented: $showCreateProfileComingSoon) {
+            Button("OK") {}
+        } message: {
+            Text("Profile creation is available from the Rules tab.")
         }
     }
 
@@ -308,28 +325,43 @@ struct DetectView: View {
 
     private var profilePickerSheet: some View {
         NavigationStack {
-            List(appState.allProfiles) { profile in
+            List {
+                ForEach(appState.allProfiles) { profile in
+                    Button {
+                        Task {
+                            await appState.setActiveProfile(profile)
+                            detectionManager.setActiveProfile(profile)
+                            showProfilePicker = false
+                        }
+                    } label: {
+                        HStack(spacing: 12) {
+                            VStack(alignment: .leading, spacing: 4) {
+                                HStack(spacing: 6) {
+                                    Text(profile.name)
+                                        .font(.subheadline.weight(.semibold))
+                                        .foregroundStyle(.primary)
+                                    TriggerTypeBadge(trigger: profile.triggerType)
+                                }
+                                Text(profile.description)
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                            Spacer()
+                            if profile.isActive {
+                                Image(systemName: "checkmark.circle.fill")
+                                    .foregroundStyle(.blue)
+                            }
+                        }
+                    }
+                }
+
                 Button {
-                    Task {
-                        await appState.setActiveProfile(profile)
-                        showProfilePicker = false
-                    }
+                    showProfilePicker = false
+                    showCreateProfileComingSoon = true
                 } label: {
-                    HStack {
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text(profile.name)
-                                .font(.subheadline.weight(.semibold))
-                                .foregroundStyle(.primary)
-                            Text(profile.description)
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                        }
-                        Spacer()
-                        if profile.isActive {
-                            Image(systemName: "checkmark.circle.fill")
-                                .foregroundStyle(.blue)
-                        }
-                    }
+                    Label("Create new profile", systemImage: "plus.circle")
+                        .font(.subheadline)
+                        .foregroundStyle(.blue)
                 }
             }
             .navigationTitle("Switch Profile")
@@ -341,6 +373,43 @@ struct DetectView: View {
             }
         }
         .presentationDetents([.medium])
+    }
+}
+
+// MARK: - TriggerTypeBadge
+
+private struct TriggerTypeBadge: View {
+    let trigger: TriggerType
+
+    var body: some View {
+        Text(label)
+            .font(.caption2.weight(.semibold))
+            .foregroundStyle(color)
+            .padding(.horizontal, 6).padding(.vertical, 2)
+            .background(color.opacity(0.12))
+            .clipShape(Capsule())
+    }
+
+    private var label: String {
+        switch trigger {
+        case .visionAI:        return "Vision AI"
+        case .qrCode:          return "QR"
+        case .textOCR:         return "OCR"
+        case .objectDetection: return "Objects"
+        case .faceRecognition: return "Faces"
+        case .combined:        return "Multi"
+        }
+    }
+
+    private var color: Color {
+        switch trigger {
+        case .visionAI:        return .blue
+        case .qrCode:          return .green
+        case .textOCR:         return .orange
+        case .objectDetection: return .purple
+        case .faceRecognition: return .pink
+        case .combined:        return .gray
+        }
     }
 }
 

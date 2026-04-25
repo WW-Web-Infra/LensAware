@@ -34,7 +34,7 @@ enum DatasetType: String, Codable, Sendable {
 
 // MARK: - LensProfile
 
-struct LensProfile: Codable, Identifiable, Sendable {
+struct LensProfile: Codable, Identifiable, Equatable, Sendable {
     let id: UUID
     let tenantId: String
     let name: String

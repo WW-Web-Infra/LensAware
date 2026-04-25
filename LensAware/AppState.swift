@@ -12,7 +12,7 @@ enum DetectionItem: Identifiable, Sendable {
         switch self {
         case .meal(let m):      return "meal-\(m.id ?? 0)-\(m.timestamp.timeIntervalSince1970)"
         case .ergonomic(let e): return "ergo-\(e.id ?? 0)-\(e.timestamp.timeIntervalSince1970)"
-        case .qrScan(let q):    return "qr-\(q.id ?? 0)-\(q.timestamp.timeIntervalSince1970)"
+        case .qrScan(let q):    return "qr-\(q.id.uuidString)-\(q.timestamp.timeIntervalSince1970)"
         }
     }
 

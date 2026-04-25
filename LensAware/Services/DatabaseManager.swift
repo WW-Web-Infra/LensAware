@@ -47,7 +47,38 @@ actor DatabaseManager {
     // MARK: - 1. setupDatabase (public, idempotent)
 
     func setupDatabase() {
-        createAllTables()   // actor-isolated calling nonisolated is always allowed
+        createAllTables()
+        migrateQRScansIfNeeded()
+    }
+
+    // Detects the old INTEGER-pk qr_scans schema and rebuilds the table.
+    // Safe to call on every launch — no-op when already on new schema.
+    private func migrateQRScansIfNeeded() {
+        let sql = "PRAGMA table_info(qr_scans);"
+        guard let stmt = prepare(sql) else { return }
+        var hasNewSchema = false
+        while sqlite3_step(stmt) == SQLITE_ROW {
+            if let ptr = sqlite3_column_text(stmt, 1),
+               String(cString: ptr) == "profile_id" {
+                hasNewSchema = true
+                break
+            }
+        }
+        sqlite3_finalize(stmt)
+        guard !hasNewSchema else { return }
+        execute("DROP TABLE IF EXISTS qr_scans;")
+        execute("""
+            CREATE TABLE qr_scans (
+                id             TEXT PRIMARY KEY,
+                profile_id     TEXT NOT NULL REFERENCES lens_profiles(id),
+                tenant_id      TEXT NOT NULL,
+                timestamp      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                qr_value       TEXT NOT NULL,
+                audio_response TEXT,
+                action_taken   TEXT,
+                success        INTEGER DEFAULT 1
+            );
+        """)
     }
 
     // MARK: - 2. saveProfile
@@ -454,15 +485,24 @@ actor DatabaseManager {
 
     // MARK: - 17. saveQRScan
 
-    func saveQRScan(_ scan: QRScan) {
+    func saveQRScan(_ scan: QRScan) throws {
         let sql = """
-            INSERT INTO qr_scans (timestamp, raw_value, url)
-            VALUES (?, ?, ?);
+            INSERT OR REPLACE INTO qr_scans
+              (id, profile_id, tenant_id, timestamp, qr_value,
+               audio_response, action_taken, success)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?);
         """
-        guard let stmt = prepare(sql) else { return }
-        bindText(stmt, 1, iso.string(from: scan.timestamp))
-        bindText(stmt, 2, scan.rawValue)
-        if let url = scan.url { bindText(stmt, 3, url) } else { sqlite3_bind_null(stmt, 3) }
+        guard let stmt = prepare(sql) else {
+            throw DatabaseError.writeError("Could not prepare qr_scans insert")
+        }
+        bindText(stmt, 1, scan.id.uuidString)
+        bindText(stmt, 2, scan.profileId.uuidString)
+        bindText(stmt, 3, scan.tenantId)
+        bindText(stmt, 4, iso.string(from: scan.timestamp))
+        bindText(stmt, 5, scan.qrValue)
+        if let ar = scan.audioResponse { bindText(stmt, 6, ar) } else { sqlite3_bind_null(stmt, 6) }
+        bindText(stmt, 7, scan.actionTaken)
+        sqlite3_bind_int(stmt, 8, scan.success ? 1 : 0)
         sqlite3_step(stmt)
         sqlite3_finalize(stmt)
     }
@@ -495,22 +535,46 @@ actor DatabaseManager {
 
     // MARK: - 19. fetchRecentQRScans
 
-    func fetchRecentQRScans(limit: Int = 20) -> [QRScan] {
-        let sql = """
-            SELECT id, timestamp, raw_value, url
-            FROM   qr_scans
-            ORDER  BY timestamp DESC
-            LIMIT  ?;
-        """
+    func fetchRecentQRScans(profileId: UUID? = nil, limit: Int = 20) -> [QRScan] {
+        let sql: String
+        if profileId != nil {
+            sql = """
+                SELECT id, profile_id, tenant_id, timestamp, qr_value,
+                       audio_response, action_taken, success
+                FROM   qr_scans
+                WHERE  profile_id = ?
+                ORDER  BY timestamp DESC
+                LIMIT  ?;
+            """
+        } else {
+            sql = """
+                SELECT id, profile_id, tenant_id, timestamp, qr_value,
+                       audio_response, action_taken, success
+                FROM   qr_scans
+                ORDER  BY timestamp DESC
+                LIMIT  ?;
+            """
+        }
         guard let stmt = prepare(sql) else { return [] }
-        sqlite3_bind_int(stmt, 1, Int32(limit))
+        if let pid = profileId {
+            bindText(stmt, 1, pid.uuidString)
+            sqlite3_bind_int(stmt, 2, Int32(limit))
+        } else {
+            sqlite3_bind_int(stmt, 1, Int32(limit))
+        }
         var rows: [QRScan] = []
         while sqlite3_step(stmt) == SQLITE_ROW {
+            guard let id  = UUID(uuidString: colString(stmt, 0)),
+                  let pid = UUID(uuidString: colString(stmt, 1)) else { continue }
             rows.append(QRScan(
-                id:        sqlite3_column_int64(stmt, 0),
-                timestamp: iso.date(from: colString(stmt, 1)) ?? Date(),
-                rawValue:  colString(stmt, 2),
-                url:       colStringOrNil(stmt, 3)
+                id:            id,
+                profileId:     pid,
+                tenantId:      colString(stmt, 2),
+                timestamp:     iso.date(from: colString(stmt, 3)) ?? Date(),
+                qrValue:       colString(stmt, 4),
+                audioResponse: colStringOrNil(stmt, 5),
+                actionTaken:   colString(stmt, 6),
+                success:       sqlite3_column_int(stmt, 7) != 0
             ))
         }
         sqlite3_finalize(stmt)
@@ -612,10 +676,14 @@ actor DatabaseManager {
         """)
         execute("""
             CREATE TABLE IF NOT EXISTS qr_scans (
-                id        INTEGER PRIMARY KEY AUTOINCREMENT,
-                timestamp TIMESTAMP NOT NULL,
-                raw_value TEXT NOT NULL,
-                url       TEXT
+                id             TEXT PRIMARY KEY,
+                profile_id     TEXT NOT NULL REFERENCES lens_profiles(id),
+                tenant_id      TEXT NOT NULL,
+                timestamp      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                qr_value       TEXT NOT NULL,
+                audio_response TEXT,
+                action_taken   TEXT,
+                success        INTEGER DEFAULT 1
             );
         """)
     }

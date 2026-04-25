@@ -24,6 +24,7 @@
 		5A5B1D0BCBDF539D3C3757A5 /* LiveDetectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A59E3F2BE85DE31DA115633A /* LiveDetectionView.swift */; };
 		67BCB58FA668BE559DEB916F /* ProfileCreationStep2Trigger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01CE9D844AF406BF4914B461 /* ProfileCreationStep2Trigger.swift */; };
 		680A8075F396F579FEC64DF7 /* combined_analysis.txt in Resources */ = {isa = PBXBuildFile; fileRef = ADC3B66E0B13B2CF38085AFC /* combined_analysis.txt */; };
+		6A82DE81D037D6F4F22DB15F /* QRScannerService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA2B42869A165C4681D8082B /* QRScannerService.swift */; };
 		6C71F586476367133158E5E3 /* RulesEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5037EAE7C12F3673DF5815C /* RulesEngine.swift */; };
 		74A9B1D5EFE330B466D7455B /* MWDATCamera in Frameworks */ = {isa = PBXBuildFile; productRef = 7AD3BE926E45B8C10F6E245E /* MWDATCamera */; };
 		77888CD752DB77272454E249 /* DetectionBadge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E12682A5EC4A583E9AA3395 /* DetectionBadge.swift */; };
@@ -70,7 +71,7 @@
 		502C8DA6BFDB9ADB3AB90BB7 /* AudioManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioManager.swift; sourceTree = "<group>"; };
 		5379DE5EB8F7EB58A581BDF5 /* GlassesManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlassesManager.swift; sourceTree = "<group>"; };
 		58DE3A73329B4F1139638156 /* OnboardingScreen5Glasses.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingScreen5Glasses.swift; sourceTree = "<group>"; };
-		5AF2A7C29A72F588431FDA60 /* LensAware.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = LensAware.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		5AF2A7C29A72F588431FDA60 /* LensAware.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LensAware.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		6183B71C6B6871B0D8C494AE /* DetectView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetectView.swift; sourceTree = "<group>"; };
 		6B9D01D0E3A8B1FC228B8242 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
 		73322A4B44F4991B621AAE07 /* HealthDetectionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthDetectionManager.swift; sourceTree = "<group>"; };
@@ -83,6 +84,7 @@
 		A38F2C06A443A593CCA9F36C /* ProfileCreationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileCreationView.swift; sourceTree = "<group>"; };
 		A59E3F2BE85DE31DA115633A /* LiveDetectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveDetectionView.swift; sourceTree = "<group>"; };
 		A8CCE5113BD18787CADCFAF5 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
+		AA2B42869A165C4681D8082B /* QRScannerService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRScannerService.swift; sourceTree = "<group>"; };
 		ADC3B66E0B13B2CF38085AFC /* combined_analysis.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = combined_analysis.txt; sourceTree = "<group>"; };
 		B8AC8E496DCB97BDCC6B5643 /* Config.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Config.plist; sourceTree = "<group>"; };
 		BE4A21E78D8A2975611D3F0A /* StatCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatCard.swift; sourceTree = "<group>"; };
@@ -122,6 +124,7 @@
 				24EBF991D093C9133DFB0A6A /* AnalyticsManager.swift */,
 				FCF30517C53F4ED735477709 /* ClaudeVisionService.swift */,
 				193108782A105A84CE19C117 /* DatabaseManager.swift */,
+				AA2B42869A165C4681D8082B /* QRScannerService.swift */,
 				D29DC3D26AA8E2E1971F0D19 /* ResponsePlayer.swift */,
 				E5037EAE7C12F3673DF5815C /* RulesEngine.swift */,
 			);
@@ -302,7 +305,7 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
-				LastUpgradeCheck = 1600;
+				LastUpgradeCheck = 2630;
 				TargetAttributes = {
 					9A1CAF2FCED79E77492DD539 = {
 						DevelopmentTeam = QV83FHLV6F;
@@ -382,6 +385,7 @@
 				584012288FABEB6B484AE201 /* ProfileCreationStep3Action.swift in Sources */,
 				7CD5D7F18CB75EC9CD8290C4 /* ProfileCreationStep4Tone.swift in Sources */,
 				9C81CB1DD9590A8E9CD0405C /* ProfileCreationView.swift in Sources */,
+				6A82DE81D037D6F4F22DB15F /* QRScannerService.swift in Sources */,
 				124274D349CEA6E2C99DDB9A /* Records.swift in Sources */,
 				86DFF63F868E452BBCF7157D /* ResponsePlayer.swift in Sources */,
 				FAFA76A3FF9C71CBAA328315 /* Rule.swift in Sources */,
@@ -401,7 +405,6 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = QV83FHLV6F;
 				INFOPLIST_FILE = LensAware/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -451,8 +454,10 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = QV83FHLV6F;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
@@ -466,6 +471,7 @@
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_VERSION = 5.0;
@@ -478,7 +484,6 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = QV83FHLV6F;
 				INFOPLIST_FILE = LensAware/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -528,8 +533,10 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = QV83FHLV6F;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -550,6 +557,7 @@
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;

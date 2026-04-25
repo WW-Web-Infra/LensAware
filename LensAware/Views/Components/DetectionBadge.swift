@@ -53,7 +53,7 @@ struct DetectionBadge: View {
         case .ergonomic(let e):
             return "Posture: \(e.assessment.replacingOccurrences(of: "_", with: " "))"
         case .qrScan(let q):
-            return q.url ?? q.rawValue
+            return q.qrValue
         }
     }
 
@@ -64,7 +64,7 @@ struct DetectionBadge: View {
         case .ergonomic(let e):
             return e.recommendation
         case .qrScan(let q):
-            return q.url != nil ? "URL detected" : "Text QR code"
+            return q.actionTaken == "url_fetched" ? "URL detected" : "Text QR code"
         }
     }
 

@@ -16,106 +16,43 @@ struct OnboardingScreen2Who: View {
             .padding(.horizontal, 24)
             .padding(.top, 8)
 
-            ScrollView {
-                VStack(spacing: 12) {
-                    // Health card
-                    OnboardingOptionCard(isSelected: coordinator.path == .health) {
-                        coordinator.path = .health
-                    } content: {
-                        HStack(spacing: 14) {
-                            ZStack {
-                                Circle().fill(Color.green.opacity(0.15))
-                                    .frame(width: 48, height: 48)
-                                Image(systemName: "figure.run")
-                                    .foregroundStyle(.green)
-                            }
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text("Myself — health")
-                                    .font(.subheadline.weight(.semibold))
-                                Text("Food, ergonomics, mindful eating")
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                            }
-                            Spacer()
-                            if coordinator.path == .health {
-                                Image(systemName: "checkmark.circle.fill")
-                                    .foregroundStyle(.blue)
-                            }
-                        }
-                    }
+            Spacer()
 
-                    // Care card
-                    OnboardingOptionCard(isSelected: coordinator.path == .care) {
-                        coordinator.showComingSoon = true
-                        coordinator.comingSoonMessage = "Care profile coming soon. We'll notify you when it's ready."
-                    } content: {
-                        HStack(spacing: 14) {
-                            ZStack {
-                                Circle().fill(Color.pink.opacity(0.15))
-                                    .frame(width: 48, height: 48)
-                                Image(systemName: "figure.and.child.holdinghands")
-                                    .foregroundStyle(.pink)
-                            }
-                            VStack(alignment: .leading, spacing: 4) {
-                                HStack(spacing: 8) {
-                                    Text("Someone I care for")
-                                        .font(.subheadline.weight(.semibold))
-                                    Text("Coming soon")
-                                        .font(.caption2.weight(.semibold))
-                                        .foregroundStyle(.white)
-                                        .padding(.horizontal, 8).padding(.vertical, 3)
-                                        .background(Color.orange)
-                                        .clipShape(Capsule())
-                                }
-                                Text("Dementia, medication, reminders")
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                            }
-                            Spacer()
-                        }
-                    }
-
-                    // Organisation card
-                    OnboardingOptionCard(isSelected: coordinator.path == .organisation) {
-                        coordinator.path = .organisation
-                    } content: {
-                        HStack(spacing: 14) {
-                            ZStack {
-                                Circle().fill(Color.blue.opacity(0.15))
-                                    .frame(width: 48, height: 48)
-                                Image(systemName: "building.2")
-                                    .foregroundStyle(.blue)
-                            }
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text("My organisation")
-                                    .font(.subheadline.weight(.semibold))
-                                Text("Custom dataset and rules")
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                            }
-                            Spacer()
-                            if coordinator.path == .organisation {
-                                Image(systemName: "checkmark.circle.fill")
-                                    .foregroundStyle(.blue)
-                            }
-                        }
-                    }
+            HStack(spacing: 14) {
+                ZStack {
+                    Circle().fill(Color.green.opacity(0.15))
+                        .frame(width: 48, height: 48)
+                    Image(systemName: "figure.run")
+                        .foregroundStyle(.green)
                 }
-                .padding(.horizontal, 24)
-                .padding(.vertical, 16)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Myself — health")
+                        .font(.subheadline.weight(.semibold))
+                    Text("Food, ergonomics, mindful eating")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                Spacer()
+                Image(systemName: "checkmark.circle.fill")
+                    .foregroundStyle(.blue)
             }
+            .padding(16)
+            .background(Color.blue.opacity(0.08))
+            .overlay(
+                RoundedRectangle(cornerRadius: 14)
+                    .stroke(Color.blue.opacity(0.4), lineWidth: 1.5)
+            )
+            .clipShape(RoundedRectangle(cornerRadius: 14))
+            .padding(.horizontal, 24)
 
             Spacer()
 
             OnboardingPrimaryButton(title: "Continue") {
-                if coordinator.path == .organisation {
-                    coordinator.showProfileCreation = true
-                } else {
-                    coordinator.next()
-                }
+                coordinator.next()
             }
             .padding(.horizontal, 24)
             .padding(.bottom, 48)
         }
+        .onAppear { coordinator.path = .health }
     }
 }

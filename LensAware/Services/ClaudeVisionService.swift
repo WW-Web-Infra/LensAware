@@ -89,7 +89,7 @@ actor ClaudeVisionService {
                 .inlineData(mimeType: "image/jpeg", base64: base64),
                 .text(prompt)
             ])],
-            generationConfig: GeminiGenerationConfig(responseMimeType: "application/json")
+            generationConfig: .healthAnalysis
         )
 
         let body = try JSONEncoder().encode(payload)
@@ -197,4 +197,82 @@ private enum GeminiPart: Encodable {
 
 private struct GeminiGenerationConfig: Encodable {
     let responseMimeType: String
+    let responseSchema: GeminiSchema
+}
+
+// Gemini structured-output schema for LensAnalysis.
+// Forces the model to emit exactly the fields we decode, preventing hallucinated keys.
+private struct GeminiSchema: Encodable {
+    let type = "object"
+    let properties: [String: GeminiSchemaNode]
+    let required: [String]
+}
+
+indirect enum GeminiSchemaNode: Encodable {
+    case primitive(type: String)
+    case object(properties: [String: GeminiSchemaNode], required: [String])
+    case array(items: GeminiSchemaNode)
+
+    func encode(to encoder: Encoder) throws {
+        var c = encoder.container(keyedBy: K.self)
+        switch self {
+        case .primitive(let t):
+            try c.encode(t, forKey: .type)
+        case .object(let props, let req):
+            try c.encode("object", forKey: .type)
+            try c.encode(props,    forKey: .properties)
+            try c.encode(req,      forKey: .required)
+        case .array(let items):
+            try c.encode("array",  forKey: .type)
+            try c.encode(items,    forKey: .items)
+        }
+    }
+    enum K: String, CodingKey { case type, properties, required, items }
+}
+
+private extension GeminiGenerationConfig {
+    static var healthAnalysis: GeminiGenerationConfig {
+        let foodItem = GeminiSchemaNode.object(
+            properties: [
+                "name":      .primitive(type: "string"),
+                "calories":  .primitive(type: "integer"),
+                "protein_g": .primitive(type: "number"),
+                "carbs_g":   .primitive(type: "number"),
+                "fat_g":     .primitive(type: "number"),
+            ],
+            required: ["name", "calories", "protein_g", "carbs_g", "fat_g"]
+        )
+        let schema = GeminiSchema(
+            properties: [
+                "food_analysis": .object(
+                    properties: [
+                        "food_detected":  .primitive(type: "boolean"),
+                        "meal_type":      .primitive(type: "string"),
+                        "items":          .array(items: foodItem),
+                        "total_calories": .primitive(type: "integer"),
+                    ],
+                    required: ["food_detected", "meal_type", "items", "total_calories"]
+                ),
+                "dining_context": .object(
+                    properties: [
+                        "location":            .primitive(type: "string"),
+                        "screen_visible":      .primitive(type: "boolean"),
+                        "eating_alone":        .primitive(type: "boolean"),
+                        "mindful_eating_score": .primitive(type: "integer"),
+                    ],
+                    required: ["location", "screen_visible", "eating_alone", "mindful_eating_score"]
+                ),
+                "ergonomics": .object(
+                    properties: [
+                        "monitor_position": .primitive(type: "string"),
+                        "assessment":       .primitive(type: "string"),
+                        "suggestion":       .primitive(type: "string"),
+                    ],
+                    required: ["monitor_position", "assessment", "suggestion"]
+                ),
+            ],
+            required: ["food_analysis", "dining_context", "ergonomics"]
+        )
+        return GeminiGenerationConfig(responseMimeType: "application/json", responseSchema: schema)
+    }
 }

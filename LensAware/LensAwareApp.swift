@@ -33,7 +33,6 @@ struct LensAwareApp: App {
                     .environmentObject(glassesManager)
                 }
                 .task {
-                    await appState.seedDefaultProfilesIfNeeded()
                     await appState.setup()
                     if !UserDefaults.standard.bool(forKey: "lensaware_onboarding_complete") {
                         showOnboarding = true

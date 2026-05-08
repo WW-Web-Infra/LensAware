@@ -49,6 +49,24 @@ actor DatabaseManager {
     func setupDatabase() {
         createAllTables()
         migrateQRScansIfNeeded()
+        deduplicateSystemProfiles()
+    }
+
+    // Removes system profiles whose IDs are not the canonical stable UUIDs.
+    // Fixes installs where seedDefaultProfilesIfNeeded() created duplicates with random UUIDs.
+    private func deduplicateSystemProfiles() {
+        let stableIDs = [
+            "6BA7B810-9DAD-11D1-80B4-00C04FD430C8",  // Health
+            "6BA7B811-9DAD-11D1-80B4-00C04FD430C8",  // QR Scanner
+        ]
+        let placeholders = stableIDs.map { _ in "?" }.joined(separator: ", ")
+        let sql = "DELETE FROM lens_profiles WHERE is_system = 1 AND id NOT IN (\(placeholders));"
+        guard let stmt = prepare(sql) else { return }
+        for (i, id) in stableIDs.enumerated() {
+            bindText(stmt, Int32(i + 1), id)
+        }
+        sqlite3_step(stmt)
+        sqlite3_finalize(stmt)
     }
 
     // Detects the old INTEGER-pk qr_scans schema and rebuilds the table.

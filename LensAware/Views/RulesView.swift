@@ -26,6 +26,13 @@ struct RulesView: View {
                                 } else {
                                     ForEach(profile.rules) { rule in
                                         RuleRow(rule: rule)
+                                            .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                                                Button(role: .destructive) {
+                                                    deleteRule(rule, from: profile)
+                                                } label: {
+                                                    Label("Delete", systemImage: "trash")
+                                                }
+                                            }
                                     }
                                 }
                             }
@@ -103,6 +110,22 @@ struct RulesView: View {
                     deleteError = error.localizedDescription
                     showDeleteError = true
                 }
+            }
+        }
+    }
+
+    private func deleteRule(_ rule: Rule, from profile: LensProfile) {
+        guard !profile.isSystem else {
+            deleteError = "Rules in built-in profiles cannot be deleted."
+            showDeleteError = true
+            return
+        }
+        Task {
+            do {
+                try await appState.deleteRule(rule)
+            } catch {
+                deleteError = error.localizedDescription
+                showDeleteError = true
             }
         }
     }

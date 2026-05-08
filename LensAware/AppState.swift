@@ -157,6 +157,13 @@ final class AppState {
         await refreshStats()
     }
 
+    // MARK: - deleteRule
+
+    func deleteRule(_ rule: Rule) async throws {
+        try await dbManager.deleteRule(id: rule.id)
+        await loadProfiles()
+    }
+
     // MARK: - saveRuleToggle
 
     func saveRuleToggle(_ rule: Rule) async {

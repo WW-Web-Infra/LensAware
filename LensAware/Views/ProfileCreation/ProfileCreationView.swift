@@ -13,13 +13,14 @@ final class ProfileCreationCoordinator {
     var baseURL: String = ""
     var apiEndpoint: String = ""
     var authHeader: String = ""
+    var catalogueFilename: String = ""
     var tone: ToneType = .coach
 
     var isCreating: Bool = false
     var showDuplicateError: Bool = false
 
     func defaultTone(for trigger: TriggerType) -> ToneType {
-        trigger == .qrCode ? .guide : .coach
+        trigger == .qrCode ? .alert : .coach
     }
 
     func defaultDatasetType(for trigger: TriggerType) -> DatasetType {
@@ -42,6 +43,9 @@ final class ProfileCreationCoordinator {
         case .cloudAPI where !apiEndpoint.isEmpty:
             var d: [String: String] = ["endpoint": apiEndpoint]
             if !authHeader.isEmpty { d["auth_header"] = authHeader }
+            return (try? JSONEncoder().encode(d)).flatMap { String(data: $0, encoding: .utf8) }
+        case .localJSON where !catalogueFilename.isEmpty:
+            let d = ["filename": catalogueFilename]
             return (try? JSONEncoder().encode(d)).flatMap { String(data: $0, encoding: .utf8) }
         default:
             return nil

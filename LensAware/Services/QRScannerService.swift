@@ -80,6 +80,17 @@ struct QRScannerService: Sendable {
             }
             return readAloud(raw)
 
+        case .cloudAPI:
+            guard let endpoint = cloudAPIEndpoint(from: profile.datasetConfigJSON) else {
+                return readAloud(raw)
+            }
+            let auth = cloudAPIAuthHeader(from: profile.datasetConfigJSON)
+            let service = APILookupService()
+            if let response = await service.query(endpoint: endpoint, authHeader: auth, context: raw) {
+                return QRAction(qrValue: raw, audioResponse: response, actionTaken: "api_lookup", success: true)
+            }
+            return readAloud(raw)
+
         default:
             // .llmOnly and everything else — read raw value aloud, no network
             return readAloud(raw)
@@ -111,8 +122,8 @@ struct QRScannerService: Sendable {
     // MARK: - 4. searchLocalCatalogue
 
     func searchLocalCatalogue(code: String, filename: String) -> String? {
-        guard let url = Bundle.main.url(forResource: filename, withExtension: "json"),
-              let data = try? Data(contentsOf: url),
+        let data = catalogueData(filename: filename)
+        guard let data,
               let entries = try? JSONSerialization.jsonObject(with: data) as? [[String: Any]]
         else { return nil }
 
@@ -128,6 +139,16 @@ struct QRScannerService: Sendable {
         return nil
     }
 
+    // Checks user-uploaded catalogues in Documents first, then falls back to bundle.
+    private func catalogueData(filename: String) -> Data? {
+        let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        let userFile = docs.appendingPathComponent("catalogues/\(filename).json")
+        if let data = try? Data(contentsOf: userFile) { return data }
+        if let url = Bundle.main.url(forResource: filename, withExtension: "json"),
+           let data = try? Data(contentsOf: url) { return data }
+        return nil
+    }
+
     // MARK: - Private helpers
 
     private func readAloud(_ raw: String) -> QRAction {
@@ -137,6 +158,24 @@ struct QRScannerService: Sendable {
             actionTaken: "read_aloud",
             success: true
         )
+    }
+
+    private func cloudAPIEndpoint(from configJSON: String?) -> String? {
+        guard let cfg = configJSON,
+              let data = cfg.data(using: .utf8),
+              let dict = try? JSONDecoder().decode([String: String].self, from: data),
+              let ep = dict["endpoint"], !ep.isEmpty
+        else { return nil }
+        return ep
+    }
+
+    private func cloudAPIAuthHeader(from configJSON: String?) -> String? {
+        guard let cfg = configJSON,
+              let data = cfg.data(using: .utf8),
+              let dict = try? JSONDecoder().decode([String: String].self, from: data),
+              let auth = dict["auth_header"], !auth.isEmpty
+        else { return nil }
+        return auth
     }
 
     private func catalogueFilename(from configJSON: String?) -> String {

@@ -35,6 +35,10 @@ final class HealthDetectionManager: ObservableObject {
 
     private var activeProfile: LensProfile?
 
+    private var lastAudioFingerprint: String = ""
+    private var lastAudioFingerprintTime: Date = .distantPast
+    private let deduplicationWindow: TimeInterval = 30
+
     // MARK: - Init
 
     init() {
@@ -125,8 +129,17 @@ private extension HealthDetectionManager {
         if audioStrings.isEmpty {
             captureState = .idle
         } else {
-            captureState = .responding
-            responsePlayer.play(audioStrings)
+            let fingerprint = audioStrings.joined(separator: "|")
+            let now = Date()
+            if fingerprint == lastAudioFingerprint,
+               now.timeIntervalSince(lastAudioFingerprintTime) < deduplicationWindow {
+                captureState = .idle
+            } else {
+                lastAudioFingerprint = fingerprint
+                lastAudioFingerprintTime = now
+                captureState = .responding
+                responsePlayer.play(audioStrings)
+            }
         }
 
         let qrActions   = engine.lastQRActions

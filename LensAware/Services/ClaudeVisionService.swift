@@ -131,7 +131,71 @@ actor ClaudeVisionService {
         throw VisionServiceError.maxRetriesExceeded
     }
 
-    // MARK: - 4. parseGeminiResponse
+    // MARK: - 4. analyzeForProfile (custom-profile lightweight path)
+
+    func analyzeForProfile(imageData: Data,
+                           profileName: String,
+                           profileDescription: String,
+                           tone: ToneType) async throws -> String? {
+        guard let resized = resizeImage(imageData) else {
+            throw VisionServiceError.imageResizeFailed
+        }
+
+        let toneInstruction: String
+        switch tone {
+        case .coach:     toneInstruction = "Be direct and motivating."
+        case .alert:     toneInstruction = "Be brief and factual."
+        case .guide:     toneInstruction = "Be friendly and helpful."
+        case .companion: toneInstruction = "Be warm and supportive."
+        }
+
+        let prompt = """
+        You are embedded in smart glasses. The user has a profile called "\(profileName)" with goal: "\(profileDescription)". \(toneInstruction)
+        Based on this image, give ONE short spoken sentence (15 words max) relevant to the profile's goal.
+        If nothing in the image is relevant to the profile, reply with exactly: SKIP
+        Reply with only the sentence or SKIP — nothing else.
+        """
+
+        let base64  = resized.base64EncodedString()
+        let payload = GeminiRequest(
+            contents: [GeminiContent(parts: [
+                .inlineData(mimeType: "image/jpeg", base64: base64),
+                .text(prompt)
+            ])],
+            generationConfig: GeminiGenerationConfig(responseMimeType: "text/plain", responseSchema: nil)
+        )
+
+        let body = try JSONEncoder().encode(payload)
+        var urlRequest        = URLRequest(url: URL(string: "\(endpoint)?key=\(apiKey)")!)
+        urlRequest.httpMethod = "POST"
+        urlRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        urlRequest.httpBody   = body
+
+        let (data, response) = try await URLSession.shared.data(for: urlRequest)
+        guard let http = response as? HTTPURLResponse, http.statusCode == 200 else {
+            let msg  = String(data: data, encoding: .utf8) ?? "(empty)"
+            let code = (response as? HTTPURLResponse)?.statusCode ?? 0
+            throw VisionServiceError.apiError(statusCode: code, message: msg)
+        }
+
+        struct SimpleResponse: Decodable {
+            struct Candidate: Decodable {
+                struct Content: Decodable {
+                    struct Part: Decodable { let text: String? }
+                    let parts: [Part]
+                }
+                let content: Content
+            }
+            let candidates: [Candidate]
+        }
+
+        let result = try JSONDecoder().decode(SimpleResponse.self, from: data)
+        let text   = result.candidates.first?.content.parts.first?.text?
+            .trimmingCharacters(in: .whitespacesAndNewlines) ?? "SKIP"
+        return text.uppercased() == "SKIP" ? nil : text
+    }
+
+    // MARK: - 5. parseGeminiResponse
 
     private func parseGeminiResponse(_ data: Data) throws -> LensAnalysis {
         struct Response: Decodable {
@@ -197,7 +261,14 @@ private enum GeminiPart: Encodable {
 
 private struct GeminiGenerationConfig: Encodable {
     let responseMimeType: String
-    let responseSchema: GeminiSchema
+    var responseSchema: GeminiSchema?
+
+    func encode(to encoder: Encoder) throws {
+        var c = encoder.container(keyedBy: CodingKeys.self)
+        try c.encode(responseMimeType, forKey: .responseMimeType)
+        if let schema = responseSchema { try c.encode(schema, forKey: .responseSchema) }
+    }
+    enum CodingKeys: String, CodingKey { case responseMimeType, responseSchema }
 }
 
 // Gemini structured-output schema for LensAnalysis.

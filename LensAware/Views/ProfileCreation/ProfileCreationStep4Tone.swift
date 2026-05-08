@@ -7,10 +7,8 @@ private struct ToneOption {
 }
 
 private let toneOptions: [ToneOption] = [
-    ToneOption(type: .coach,     label: "Coach",     example: "Chicken salad. 420 calories. 35g protein. Good choice."),
-    ToneOption(type: .guide,     label: "Guide",     example: "Looks like a chicken salad — around 420 calories."),
-    ToneOption(type: .companion, label: "Companion", example: "Chicken salad. About 420 calories."),
-    ToneOption(type: .alert,     label: "Alert",     example: "420 calories."),
+    ToneOption(type: .coach, label: "Coach", example: "Chicken salad. 420 calories. 35g protein. Good choice."),
+    ToneOption(type: .alert, label: "Alert", example: "420 calories."),
 ]
 
 struct ProfileCreationStep4Tone: View {

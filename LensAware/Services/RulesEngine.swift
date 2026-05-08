@@ -132,9 +132,30 @@ final class RulesEngine {
     // MARK: - Private: handleVisionAI
 
     private func handleVisionAI(imageData: Data, profile: LensProfile) async -> [String] {
+        let isSystemProfile = profile.id == Self.healthProfileID || profile.id == Self.qrProfileID
+        if !isSystemProfile {
+            return await handleCustomVisionAI(imageData: imageData, profile: profile)
+        }
+
         do {
             let analysis = try await visionService.analyze(imageData: imageData)
             lastVisionAnalysis = analysis
+
+            // URL lookup: if a base URL is configured and food was detected,
+            // fetch the URL with the top item as a query and read the title aloud.
+            if profile.datasetType == .urlLookup,
+               let baseURL = parseBaseURL(from: profile.datasetConfigJSON),
+               analysis.foodAnalysis.foodDetected,
+               let topItem = analysis.foodAnalysis.items.first {
+                let query = topItem.name
+                    .addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? topItem.name
+                let urlString = baseURL.hasSuffix("?") ? "\(baseURL)q=\(query)"
+                                                       : "\(baseURL)?q=\(query)"
+                if let url = URL(string: urlString) {
+                    let title = (try? await fetchURLTitle(url)) ?? topItem.name
+                    return ["Looking up \(topItem.name). \(title)."]
+                }
+            }
 
             return profile.rules
                 .filter  { $0.isActive }
@@ -145,6 +166,87 @@ final class RulesEngine {
             lastError = error
             return []
         }
+    }
+
+    // MARK: - Private: handleCustomVisionAI
+
+    private func handleCustomVisionAI(imageData: Data, profile: LensProfile) async -> [String] {
+        if profile.datasetType == .cloudAPI {
+            guard let endpoint = parseAPIEndpoint(from: profile.datasetConfigJSON) else {
+                lastError = VisionServiceError.apiError(statusCode: 0, message: "No API endpoint configured")
+                return []
+            }
+            let auth = parseAuthHeader(from: profile.datasetConfigJSON)
+            let service = APILookupService()
+            if let response = await service.query(endpoint: endpoint,
+                                                  authHeader: auth,
+                                                  context: "Image captured from smart glasses for profile: \(profile.name)") {
+                return [response]
+            }
+            return []
+        }
+
+        do {
+            if let sentence = try await visionService.analyzeForProfile(
+                imageData: imageData,
+                profileName: profile.name,
+                profileDescription: profile.description,
+                tone: profile.tone
+            ) {
+                return [sentence]
+            }
+        } catch {
+            lastError = error
+        }
+        return []
+    }
+
+    private func parseAPIEndpoint(from configJSON: String?) -> String? {
+        guard let cfg = configJSON,
+              let data = cfg.data(using: .utf8),
+              let dict = try? JSONDecoder().decode([String: String].self, from: data),
+              let ep = dict["endpoint"], !ep.isEmpty
+        else { return nil }
+        return ep
+    }
+
+    private func parseAuthHeader(from configJSON: String?) -> String? {
+        guard let cfg = configJSON,
+              let data = cfg.data(using: .utf8),
+              let dict = try? JSONDecoder().decode([String: String].self, from: data),
+              let auth = dict["auth_header"], !auth.isEmpty
+        else { return nil }
+        return auth
+    }
+
+    private func parseBaseURL(from configJSON: String?) -> String? {
+        guard let cfg = configJSON,
+              let data = cfg.data(using: .utf8),
+              let dict = try? JSONDecoder().decode([String: String].self, from: data),
+              let base = dict["base_url"], !base.isEmpty
+        else { return nil }
+        return base
+    }
+
+    private func fetchURLTitle(_ url: URL) async throws -> String {
+        var request = URLRequest(url: url, timeoutInterval: 3)
+        request.setValue(
+            "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15",
+            forHTTPHeaderField: "User-Agent"
+        )
+        let (data, _) = try await URLSession.shared.data(for: request)
+        guard let html = String(data: data, encoding: .utf8)
+                      ?? String(data: data, encoding: .isoLatin1) else {
+            return url.host ?? url.absoluteString
+        }
+        if let range = html.range(of: #"<title[^>]*>([^<]+)</title>"#, options: .regularExpression) {
+            let stripped = String(html[range])
+                .replacingOccurrences(of: #"<title[^>]*>"#, with: "", options: .regularExpression)
+                .replacingOccurrences(of: "</title>", with: "", options: .caseInsensitive)
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+            if !stripped.isEmpty { return stripped }
+        }
+        return url.host ?? url.absoluteString
     }
 
     // MARK: - Private: buildAudioResponse (tone-aware)

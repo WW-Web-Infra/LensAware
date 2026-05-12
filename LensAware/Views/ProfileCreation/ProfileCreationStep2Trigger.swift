@@ -13,14 +13,10 @@ private let triggerOptions: [TriggerOption] = [
     TriggerOption(icon: "qrcode",          label: "QR codes",      description: "Instant, works offline",       type: .qrCode),
     TriggerOption(icon: "text.viewfinder", label: "Text and signs",description: "Read and translate text",      type: .textOCR),
     TriggerOption(icon: "figure.stand",    label: "Objects",       description: "Identify specific items",      type: .objectDetection),
-    TriggerOption(icon: "person.fill",     label: "Faces",         description: "Recognise people",             type: .faceRecognition, comingSoon: true),
-    TriggerOption(icon: "square.grid.2x2", label: "Multiple",      description: "Combine trigger types",        type: .combined, comingSoon: true),
 ]
 
 struct ProfileCreationStep2Trigger: View {
     let coordinator: ProfileCreationCoordinator
-
-    @State private var showComingSoon = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -37,15 +33,11 @@ struct ProfileCreationStep2Trigger: View {
                     ForEach(triggerOptions, id: \.type) { option in
                         TriggerCard(
                             option: option,
-                            isSelected: coordinator.triggerType == option.type && !option.comingSoon
+                            isSelected: coordinator.triggerType == option.type
                         ) {
-                            if option.comingSoon {
-                                showComingSoon = true
-                            } else {
-                                coordinator.triggerType = option.type
-                                coordinator.datasetType = coordinator.defaultDatasetType(for: option.type)
-                                coordinator.tone        = coordinator.defaultTone(for: option.type)
-                            }
+                            coordinator.triggerType = option.type
+                            coordinator.datasetType = coordinator.defaultDatasetType(for: option.type)
+                            coordinator.tone        = coordinator.defaultTone(for: option.type)
                         }
                     }
                 }
@@ -58,11 +50,6 @@ struct ProfileCreationStep2Trigger: View {
             }
             .padding(.horizontal, 24)
             .padding(.bottom, 32)
-        }
-        .alert("Coming Soon", isPresented: $showComingSoon) {
-            Button("OK") {}
-        } message: {
-            Text("This trigger type is coming in a future update.")
         }
     }
 }

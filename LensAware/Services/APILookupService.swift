@@ -1,25 +1,61 @@
 import Foundation
 
+// MARK: - ImageUploadFormat
+
+enum ImageUploadFormat: String {
+    case base64Json = "base64_json"
+    case multipart  = "multipart"
+}
+
 // MARK: - APILookupService
 
 struct APILookupService: Sendable {
 
-    // Posts a JSON body to the user's configured endpoint and returns a spoken string.
-    // Accepts both JSON responses (looks for "response", "message", or "text" key)
-    // and plain-text responses.
+    // Sends context (and optionally an image) to a user-configured endpoint.
+    //
+    // image_format "base64_json" (default): {"image": "data:image/jpeg;base64,...", "query": "..."}
+    // image_format "multipart": multipart/form-data with image bytes + query field
+    //
+    // response_key: dot-notation JSONPath to the response string, e.g.
+    //   "choices[0].message.content"           — OpenAI
+    //   "content[0].text"                      — Claude
+    //   "candidates[0].content.parts[0].text"  — Gemini
+    //   "results[0].species.scientificNameWithoutAuthor" — PlantNet
+    // If nil, the raw response body is returned as plain text.
     func query(endpoint: String,
                authHeader: String?,
-               context: String) async -> String? {
+               context: String,
+               imageData: Data? = nil,
+               imageFormat: ImageUploadFormat = .base64Json,
+               imageField: String = "image",
+               responseKey: String? = nil) async -> String? {
         guard let url = URL(string: endpoint) else { return nil }
 
-        let body = try? JSONEncoder().encode(["query": context])
-        var request        = URLRequest(url: url, timeoutInterval: 5)
+        var request = URLRequest(url: url, timeoutInterval: 10)
         request.httpMethod = "POST"
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         if let auth = authHeader, !auth.isEmpty {
             request.setValue(auth, forHTTPHeaderField: "Authorization")
         }
-        request.httpBody = body
+
+        if let imageData {
+            switch imageFormat {
+            case .base64Json:
+                let base64 = "data:image/jpeg;base64," + imageData.base64EncodedString()
+                request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+                request.httpBody = try? JSONEncoder().encode([imageField: base64, "query": context])
+
+            case .multipart:
+                let boundary = "LensAware-\(UUID().uuidString)"
+                request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
+                request.httpBody = buildMultipartBody(imageData: imageData,
+                                                      imageField: imageField,
+                                                      context: context,
+                                                      boundary: boundary)
+            }
+        } else {
+            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            request.httpBody = try? JSONEncoder().encode(["query": context])
+        }
 
         guard let (data, response) = try? await URLSession.shared.data(for: request),
               let http = response as? HTTPURLResponse,
@@ -27,22 +63,86 @@ struct APILookupService: Sendable {
             return nil
         }
 
-        // Try JSON first
-        if let dict = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
-            for key in ["response", "message", "text", "result", "answer"] {
-                if let text = dict[key] as? String, !text.isEmpty {
-                    return text
+        // If a JSONPath key is configured, resolve it
+        if let key = responseKey,
+           let json = try? JSONSerialization.jsonObject(with: data),
+           let value = resolveJSONPath(key, in: json) {
+            return value
+        }
+
+        // Fall back to raw plain-text body
+        return String(data: data, encoding: .utf8)?
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .nilIfEmpty
+    }
+
+    // MARK: - JSONPath resolver
+    // Supports dot-notation with array indices: "choices[0].message.content"
+
+    private func resolveJSONPath(_ path: String, in json: Any) -> String? {
+        let components = path.split(separator: ".").map(String.init)
+        var current: Any = json
+
+        for component in components {
+            if let bracketStart = component.firstIndex(of: "["),
+               let bracketEnd = component.firstIndex(of: "]") {
+                let key = String(component[component.startIndex..<bracketStart])
+                let idxStr = String(component[component.index(after: bracketStart)..<bracketEnd])
+                guard let idx = Int(idxStr) else { return nil }
+
+                if key.isEmpty {
+                    guard let arr = current as? [Any], idx < arr.count else { return nil }
+                    current = arr[idx]
+                } else {
+                    guard let dict = current as? [String: Any],
+                          let arr = dict[key] as? [Any],
+                          idx < arr.count else { return nil }
+                    current = arr[idx]
                 }
+            } else {
+                guard let dict = current as? [String: Any],
+                      let next = dict[component] else { return nil }
+                current = next
             }
         }
 
-        // Fall back to plain text
-        if let text = String(data: data, encoding: .utf8)?
-            .trimmingCharacters(in: .whitespacesAndNewlines),
-           !text.isEmpty {
-            return text
-        }
-
+        if let str = current as? String { return str }
+        if let num = current as? NSNumber { return num.stringValue }
         return nil
+    }
+
+    // MARK: - Multipart builder
+
+    private func buildMultipartBody(imageData: Data,
+                                    imageField: String,
+                                    context: String,
+                                    boundary: String) -> Data {
+        var body = Data()
+        let crlf = "\r\n"
+
+        body.append("--\(boundary)\(crlf)")
+        body.append("Content-Disposition: form-data; name=\"\(imageField)\"; filename=\"image.jpg\"\(crlf)")
+        body.append("Content-Type: image/jpeg\(crlf)\(crlf)")
+        body.append(imageData)
+        body.append(crlf)
+
+        body.append("--\(boundary)\(crlf)")
+        body.append("Content-Disposition: form-data; name=\"query\"\(crlf)\(crlf)")
+        body.append("\(context)\(crlf)")
+
+        body.append("--\(boundary)--\(crlf)")
+        return body
+    }
+}
+
+// MARK: - Helpers
+
+private extension String {
+    var nilIfEmpty: String? { isEmpty ? nil : self }
+}
+
+private extension Data {
+    mutating func append(_ string: String) {
+        if let data = string.data(using: .utf8) { append(data) }
     }
 }

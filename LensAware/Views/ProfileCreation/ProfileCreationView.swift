@@ -13,6 +13,9 @@ final class ProfileCreationCoordinator {
     var baseURL: String = ""
     var apiEndpoint: String = ""
     var authHeader: String = ""
+    var imageFormat: String = "base64_json"
+    var imageField: String = ""
+    var responseKey: String = ""
     var catalogueFilename: String = ""
     var tone: ToneType = .coach
 
@@ -42,7 +45,11 @@ final class ProfileCreationCoordinator {
             return (try? JSONEncoder().encode(d)).flatMap { String(data: $0, encoding: .utf8) }
         case .cloudAPI where !apiEndpoint.isEmpty:
             var d: [String: String] = ["endpoint": apiEndpoint]
-            if !authHeader.isEmpty { d["auth_header"] = authHeader }
+            if !authHeader.isEmpty  { d["auth_header"]   = authHeader }
+            if !responseKey.isEmpty { d["response_key"]  = responseKey }
+            if imageFormat != "base64_json" { d["image_format"] = imageFormat }
+            let field = imageField.trimmingCharacters(in: .whitespaces)
+            if !field.isEmpty && field != "image" { d["image_field"] = field }
             return (try? JSONEncoder().encode(d)).flatMap { String(data: $0, encoding: .utf8) }
         case .localJSON where !catalogueFilename.isEmpty:
             let d = ["filename": catalogueFilename]

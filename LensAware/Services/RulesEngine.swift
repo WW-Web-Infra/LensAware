@@ -176,11 +176,20 @@ final class RulesEngine {
                 lastError = VisionServiceError.apiError(statusCode: 0, message: "No API endpoint configured")
                 return []
             }
-            let auth = parseAuthHeader(from: profile.datasetConfigJSON)
-            let service = APILookupService()
-            if let response = await service.query(endpoint: endpoint,
-                                                  authHeader: auth,
-                                                  context: "Image captured from smart glasses for profile: \(profile.name)") {
+            let auth        = parseAuthHeader(from: profile.datasetConfigJSON)
+            let imgFormat   = parseImageFormat(from: profile.datasetConfigJSON)
+            let imgField    = parseImageField(from: profile.datasetConfigJSON)
+            let responseKey = parseResponseKey(from: profile.datasetConfigJSON)
+            let service     = APILookupService()
+            if let response = await service.query(
+                endpoint: endpoint,
+                authHeader: auth,
+                context: "Image captured from smart glasses for profile: \(profile.name)",
+                imageData: imageData,
+                imageFormat: imgFormat,
+                imageField: imgField,
+                responseKey: responseKey
+            ) {
                 return [response]
             }
             return []
@@ -283,6 +292,33 @@ final class RulesEngine {
               let base = dict["base_url"], !base.isEmpty
         else { return nil }
         return base
+    }
+
+    private func parseImageFormat(from configJSON: String?) -> ImageUploadFormat {
+        guard let cfg = configJSON,
+              let data = cfg.data(using: .utf8),
+              let dict = try? JSONDecoder().decode([String: String].self, from: data),
+              let raw  = dict["image_format"]
+        else { return .base64Json }
+        return ImageUploadFormat(rawValue: raw) ?? .base64Json
+    }
+
+    private func parseImageField(from configJSON: String?) -> String {
+        guard let cfg = configJSON,
+              let data = cfg.data(using: .utf8),
+              let dict = try? JSONDecoder().decode([String: String].self, from: data),
+              let field = dict["image_field"], !field.isEmpty
+        else { return "image" }
+        return field
+    }
+
+    private func parseResponseKey(from configJSON: String?) -> String? {
+        guard let cfg = configJSON,
+              let data = cfg.data(using: .utf8),
+              let dict = try? JSONDecoder().decode([String: String].self, from: data),
+              let key  = dict["response_key"], !key.isEmpty
+        else { return nil }
+        return key
     }
 
     private func fetchURLTitle(_ url: URL) async throws -> String {

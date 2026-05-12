@@ -147,6 +147,26 @@ private struct ActionCard: View {
                             .textFieldStyle(.roundedBorder)
                             .autocorrectionDisabled()
                             .textInputAutocapitalization(.never)
+                        TextField("Response path (e.g. results[0].name)", text: $coordinator.responseKey)
+                            .textFieldStyle(.roundedBorder)
+                            .autocorrectionDisabled()
+                            .textInputAutocapitalization(.never)
+                        if coordinator.triggerType == .visionAI {
+                            VStack(alignment: .leading, spacing: 6) {
+                                Text("Image format")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                                Picker("Image format", selection: $coordinator.imageFormat) {
+                                    Text("Base64 JSON").tag("base64_json")
+                                    Text("Multipart").tag("multipart")
+                                }
+                                .pickerStyle(.segmented)
+                                TextField("Image field name (default: image)", text: $coordinator.imageField)
+                                    .textFieldStyle(.roundedBorder)
+                                    .autocorrectionDisabled()
+                                    .textInputAutocapitalization(.never)
+                            }
+                        }
 
                     default:
                         EmptyView()

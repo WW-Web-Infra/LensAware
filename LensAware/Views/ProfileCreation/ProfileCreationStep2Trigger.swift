@@ -11,8 +11,7 @@ private struct TriggerOption {
 private let triggerOptions: [TriggerOption] = [
     TriggerOption(icon: "eye",             label: "Full scene",    description: "AI understands what you see",  type: .visionAI),
     TriggerOption(icon: "qrcode",          label: "QR codes",      description: "Instant, works offline",       type: .qrCode),
-    TriggerOption(icon: "text.viewfinder", label: "Text and signs",description: "Read and translate text",      type: .textOCR),
-    TriggerOption(icon: "figure.stand",    label: "Objects",       description: "Identify specific items",      type: .objectDetection),
+    TriggerOption(icon: "text.viewfinder", label: "Text only",     description: "Read text visible in frame",   type: .textOCR),
 ]
 
 struct ProfileCreationStep2Trigger: View {

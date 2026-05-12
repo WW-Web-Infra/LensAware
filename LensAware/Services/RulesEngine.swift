@@ -90,7 +90,7 @@ final class RulesEngine {
         case .qrCode:
             return await handleQR(imageData: imageData, profile: profile)
         case .textOCR:
-            return ["OCR — coming soon"]
+            return await handleOCR(imageData: imageData, profile: profile)
         default:
             return await handleVisionAI(imageData: imageData, profile: profile)
         }
@@ -199,6 +199,63 @@ final class RulesEngine {
             lastError = error
         }
         return []
+    }
+
+    // MARK: - Private: handleOCR
+
+    private func handleOCR(imageData: Data, profile: LensProfile) async -> [String] {
+        let service = OCRService()
+        guard let text = try? await service.recognizeText(in: imageData), !text.isEmpty else {
+            return []
+        }
+
+        switch profile.datasetType {
+        case .llmOnly:
+            return [text]
+
+        case .urlLookup:
+            guard let baseURL = parseBaseURL(from: profile.datasetConfigJSON) else {
+                return [text]
+            }
+            let query = text.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? text
+            let urlString = baseURL.hasSuffix("?") ? "\(baseURL)q=\(query)" : "\(baseURL)?q=\(query)"
+            if let url = URL(string: urlString),
+               let title = try? await fetchURLTitle(url) {
+                return [title]
+            }
+            return [text]
+
+        case .localJSON:
+            let filename = parseFilename(from: profile.datasetConfigJSON)
+            if let filename,
+               let desc = QRScannerService().searchLocalCatalogue(code: text, filename: filename) {
+                return [desc]
+            }
+            return [text]
+
+        case .cloudAPI:
+            guard let endpoint = parseAPIEndpoint(from: profile.datasetConfigJSON) else {
+                return [text]
+            }
+            let auth = parseAuthHeader(from: profile.datasetConfigJSON)
+            let apiService = APILookupService()
+            if let response = await apiService.query(endpoint: endpoint, authHeader: auth, context: text) {
+                return [response]
+            }
+            return [text]
+
+        default:
+            return [text]
+        }
+    }
+
+    private func parseFilename(from configJSON: String?) -> String? {
+        guard let cfg = configJSON,
+              let data = cfg.data(using: .utf8),
+              let dict = try? JSONDecoder().decode([String: String].self, from: data),
+              let f = dict["filename"], !f.isEmpty
+        else { return nil }
+        return f
     }
 
     private func parseAPIEndpoint(from configJSON: String?) -> String? {

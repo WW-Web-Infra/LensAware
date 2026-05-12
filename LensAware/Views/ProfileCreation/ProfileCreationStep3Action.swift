@@ -74,7 +74,7 @@ private struct ActionCard: View {
                 HStack(spacing: 14) {
                     Image(systemName: option.icon)
                         .font(.title3)
-                        .foregroundStyle(isDisabled ? .tertiary : (isSelected ? .blue : .secondary))
+                        .foregroundStyle(isDisabled ? AnyShapeStyle(.tertiary) : (isSelected ? AnyShapeStyle(Color.blue) : AnyShapeStyle(.secondary)))
                         .frame(width: 28)
                     VStack(alignment: .leading, spacing: 2) {
                         Text(option.label)

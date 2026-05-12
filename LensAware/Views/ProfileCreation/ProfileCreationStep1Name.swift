@@ -1,6 +1,6 @@
 import SwiftUI
 
-private let suggestions = ["QR Scanner", "Museum Guide", "Product Lookup", "Field Service"]
+private let suggestions = ["QR Scanner", "Museum Artifacts", "Product Lookup", "Floral Detection"]
 
 struct ProfileCreationStep1Name: View {
     @Bindable var coordinator: ProfileCreationCoordinator

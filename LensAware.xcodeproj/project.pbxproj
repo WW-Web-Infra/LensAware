@@ -25,6 +25,7 @@
 		67BCB58FA668BE559DEB916F /* ProfileCreationStep2Trigger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01CE9D844AF406BF4914B461 /* ProfileCreationStep2Trigger.swift */; };
 		680A8075F396F579FEC64DF7 /* combined_analysis.txt in Resources */ = {isa = PBXBuildFile; fileRef = ADC3B66E0B13B2CF38085AFC /* combined_analysis.txt */; };
 		6A82DE81D037D6F4F22DB15F /* QRScannerService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA2B42869A165C4681D8082B /* QRScannerService.swift */; };
+		B3F2A91C7E4D5083A1C62DEF /* APILookupService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4A8E02F9B5E6194B2D73E10 /* APILookupService.swift */; };
 		6C71F586476367133158E5E3 /* RulesEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5037EAE7C12F3673DF5815C /* RulesEngine.swift */; };
 		74A9B1D5EFE330B466D7455B /* MWDATCamera in Frameworks */ = {isa = PBXBuildFile; productRef = 7AD3BE926E45B8C10F6E245E /* MWDATCamera */; };
 		77888CD752DB77272454E249 /* DetectionBadge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E12682A5EC4A583E9AA3395 /* DetectionBadge.swift */; };
@@ -85,6 +86,7 @@
 		A59E3F2BE85DE31DA115633A /* LiveDetectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveDetectionView.swift; sourceTree = "<group>"; };
 		A8CCE5113BD18787CADCFAF5 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
 		AA2B42869A165C4681D8082B /* QRScannerService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRScannerService.swift; sourceTree = "<group>"; };
+		C4A8E02F9B5E6194B2D73E10 /* APILookupService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APILookupService.swift; sourceTree = "<group>"; };
 		ADC3B66E0B13B2CF38085AFC /* combined_analysis.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = combined_analysis.txt; sourceTree = "<group>"; };
 		B8AC8E496DCB97BDCC6B5643 /* Config.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Config.plist; sourceTree = "<group>"; };
 		BE4A21E78D8A2975611D3F0A /* StatCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatCard.swift; sourceTree = "<group>"; };
@@ -122,6 +124,7 @@
 			isa = PBXGroup;
 			children = (
 				24EBF991D093C9133DFB0A6A /* AnalyticsManager.swift */,
+				C4A8E02F9B5E6194B2D73E10 /* APILookupService.swift */,
 				FCF30517C53F4ED735477709 /* ClaudeVisionService.swift */,
 				193108782A105A84CE19C117 /* DatabaseManager.swift */,
 				AA2B42869A165C4681D8082B /* QRScannerService.swift */,
@@ -354,6 +357,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				44CF0BDC0866B50AD3423BCA /* AnalyticsManager.swift in Sources */,
+				B3F2A91C7E4D5083A1C62DEF /* APILookupService.swift in Sources */,
 				E4B178A3D60DE73037204476 /* AppState.swift in Sources */,
 				0E33B2A4D289CD29B3915F02 /* AudioManager.swift in Sources */,
 				A53FB4D4916ACA7E0999A803 /* CameraStreamManager.swift in Sources */,

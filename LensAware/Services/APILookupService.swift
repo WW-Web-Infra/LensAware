@@ -49,7 +49,6 @@ struct APILookupService: Sendable {
                 request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
                 request.httpBody = buildMultipartBody(imageData: imageData,
                                                       imageField: imageField,
-                                                      context: context,
                                                       boundary: boundary)
             }
         } else {
@@ -58,19 +57,27 @@ struct APILookupService: Sendable {
         }
 
         guard let (data, response) = try? await URLSession.shared.data(for: request),
-              let http = response as? HTTPURLResponse,
-              (200..<300).contains(http.statusCode) else {
+              let http = response as? HTTPURLResponse else {
+            print("[LensAware] APILookupService — request failed (no response)")
+            return nil
+        }
+        print("[LensAware] APILookupService — HTTP \(http.statusCode)")
+        guard (200..<300).contains(http.statusCode) else {
+            let body = String(data: data, encoding: .utf8) ?? ""
+            print("[LensAware] APILookupService — error body: \(body.prefix(200))")
             return nil
         }
 
-        // If a JSONPath key is configured, resolve it
-        if let key = responseKey,
-           let json = try? JSONSerialization.jsonObject(with: data),
-           let value = resolveJSONPath(key, in: json) {
+        let json = try? JSONSerialization.jsonObject(with: data)
+
+        // If a response key is configured, only use JSONPath — never fall back to raw body
+        if let key = responseKey {
+            let value = json.flatMap { resolveJSONPath(key, in: $0) }
+            print("[LensAware] APILookupService — responseKey '\(key)' resolved to: \(value ?? "nil")")
             return value
         }
 
-        // Fall back to raw plain-text body
+        // No key configured — return raw plain-text body
         return String(data: data, encoding: .utf8)?
             .trimmingCharacters(in: .whitespacesAndNewlines)
             .nilIfEmpty
@@ -115,7 +122,6 @@ struct APILookupService: Sendable {
 
     private func buildMultipartBody(imageData: Data,
                                     imageField: String,
-                                    context: String,
                                     boundary: String) -> Data {
         var body = Data()
         let crlf = "\r\n"
@@ -125,10 +131,6 @@ struct APILookupService: Sendable {
         body.append("Content-Type: image/jpeg\(crlf)\(crlf)")
         body.append(imageData)
         body.append(crlf)
-
-        body.append("--\(boundary)\(crlf)")
-        body.append("Content-Disposition: form-data; name=\"query\"\(crlf)\(crlf)")
-        body.append("\(context)\(crlf)")
 
         body.append("--\(boundary)--\(crlf)")
         return body

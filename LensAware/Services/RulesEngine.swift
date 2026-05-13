@@ -180,6 +180,7 @@ final class RulesEngine {
             let imgFormat   = parseImageFormat(from: profile.datasetConfigJSON)
             let imgField    = parseImageField(from: profile.datasetConfigJSON)
             let responseKey = parseResponseKey(from: profile.datasetConfigJSON)
+            print("[LensAware] cloudAPI → \(endpoint) format:\(imgFormat.rawValue) field:\(imgField) responseKey:\(responseKey ?? "nil")")
             let service     = APILookupService()
             if let response = await service.query(
                 endpoint: endpoint,

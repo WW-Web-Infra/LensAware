@@ -70,17 +70,29 @@ struct APILookupService: Sendable {
 
         let json = try? JSONSerialization.jsonObject(with: data)
 
-        // If a response key is configured, only use JSONPath — never fall back to raw body
+        // If a response key is configured, JSONPath only — never fall back to raw body
         if let key = responseKey {
             let value = json.flatMap { resolveJSONPath(key, in: $0) }
             print("[LensAware] APILookupService — responseKey '\(key)' resolved to: \(value ?? "nil")")
             return value
         }
 
-        // No key configured — return raw plain-text body
+        // No key configured + JSON response: try common flat keys, otherwise return nil
+        // (avoids speaking raw JSON blobs)
+        if let dict = json as? [String: Any] {
+            for key in ["response", "message", "text", "result", "answer"] {
+                if let value = dict[key] as? String, !value.isEmpty {
+                    return String(value.prefix(300))
+                }
+            }
+            return nil
+        }
+
+        // No key configured + plain text: cap at 300 chars to avoid runaway speech
         return String(data: data, encoding: .utf8)?
             .trimmingCharacters(in: .whitespacesAndNewlines)
             .nilIfEmpty
+            .map { String($0.prefix(300)) }
     }
 
     // MARK: - JSONPath resolver

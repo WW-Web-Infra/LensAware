@@ -6,6 +6,8 @@ An iOS companion app for Meta Ray-Ban smart glasses that turns what you see into
 
 LensAware streams video from Meta Ray-Ban glasses and runs it through a configurable **Trigger → Action → Response** pipeline. Each profile defines what to look for, what to do with it, and how to respond — spoken aloud through the glasses.
 
+![LensAware Demo](Assets/demo.gif)
+
 ## Features
 
 ### System Profiles

@@ -144,4 +144,4 @@ Every profile and rule carries a `tenantId`. The database schema is tenant-scope
 
 ## License
 
-Open source — license TBD.
+MIT — see [LICENSE](LICENSE).

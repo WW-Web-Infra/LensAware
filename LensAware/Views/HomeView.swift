@@ -94,8 +94,7 @@ private struct ProfileCard: View {
 
     @ViewBuilder
     private var statsRow: some View {
-        switch profile.triggerType {
-        case .visionAI:
+        if profile.isSystem && profile.triggerType == .visionAI {
             HStack(spacing: 0) {
                 miniStat(value: "\(appState.todayMealCount)", label: "Meals", image: "fork.knife", tint: .green)
                 Divider().frame(height: 32).padding(.horizontal, 8)
@@ -103,14 +102,18 @@ private struct ProfileCard: View {
                 Divider().frame(height: 32).padding(.horizontal, 8)
                 miniStat(value: "\(appState.todayErgonomicAlerts)", label: "Posture", image: "figure.seated.seatbelt", tint: .red)
             }
-        case .qrCode:
+        } else if profile.triggerType == .qrCode {
             let count = appState.recentDetections.filter {
                 if case .qrScan = $0 { return true }
                 return false
             }.count
             miniStat(value: "\(count)", label: "Recent scans", image: "qrcode", tint: .indigo)
-        default:
-            EmptyView()
+        } else if !profile.isSystem {
+            let count = appState.recentDetections.filter {
+                if case .customDetection(let c) = $0, c.profileId == profile.id { return true }
+                return false
+            }.count
+            miniStat(value: "\(count)", label: "Recent scans", image: "sparkles", tint: .purple)
         }
     }
 

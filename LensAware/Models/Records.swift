@@ -33,6 +33,15 @@ struct DailySummary: Sendable {
     let llmSummary: String?
 }
 
+struct CustomDetectionRecord: Identifiable, Sendable {
+    let id: UUID
+    let profileId: UUID
+    let profileName: String
+    let tenantId: String
+    let timestamp: Date
+    let response: String
+}
+
 struct QRScan: Codable, Identifiable, Sendable {
     let id: UUID
     let profileId: UUID

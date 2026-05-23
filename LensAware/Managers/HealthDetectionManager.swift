@@ -142,11 +142,16 @@ private extension HealthDetectionManager {
             }
         }
 
-        let qrActions   = engine.lastQRActions
-        let qrProfileId = profile.id
-        let qrTenantId  = tenantId
+        let qrActions        = engine.lastQRActions
+        let qrProfileId      = profile.id
+        let qrTenantId       = tenantId
+        let customProfileId  = profile.id
+        let customProfileName = profile.name
+        let isCustomDetection = engine.lastVisionAnalysis == nil
+                             && engine.lastQRActions.isEmpty
+                             && !audioStrings.isEmpty
 
-        Task.detached { [dbManager, profileId, analysis = engine.lastVisionAnalysis] in
+        Task.detached { [dbManager, profileId, tenantId, analysis = engine.lastVisionAnalysis] in
             if let analysis {
                 if analysis.foodAnalysis.foodDetected {
                     let itemsJSON = (try? JSONEncoder().encode(analysis.foodAnalysis.items))
@@ -190,6 +195,17 @@ private extension HealthDetectionManager {
                     success:       action.success
                 )
                 try? await dbManager.saveQRScan(scan)
+            }
+            if isCustomDetection {
+                let record = CustomDetectionRecord(
+                    id:          UUID(),
+                    profileId:   customProfileId,
+                    profileName: customProfileName,
+                    tenantId:    tenantId,
+                    timestamp:   Date(),
+                    response:    audioStrings.joined(separator: " ")
+                )
+                try? await dbManager.saveCustomDetection(record)
             }
         }
     }

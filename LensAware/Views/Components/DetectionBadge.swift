@@ -32,17 +32,19 @@ struct DetectionBadge: View {
 
     private var icon: String {
         switch item {
-        case .meal:      return "fork.knife"
-        case .ergonomic: return "figure.seated.seatbelt"
-        case .qrScan:    return "qrcode"
+        case .meal:             return "fork.knife"
+        case .ergonomic:        return "figure.seated.seatbelt"
+        case .qrScan:           return "qrcode"
+        case .customDetection:  return "sparkles"
         }
     }
 
     private var tint: Color {
         switch item {
-        case .meal:      return .green
-        case .ergonomic: return .orange
-        case .qrScan:    return .blue
+        case .meal:             return .green
+        case .ergonomic:        return .orange
+        case .qrScan:           return .blue
+        case .customDetection:  return .purple
         }
     }
 
@@ -54,6 +56,8 @@ struct DetectionBadge: View {
             return "Posture: \(e.assessment.replacingOccurrences(of: "_", with: " "))"
         case .qrScan(let q):
             return q.qrValue
+        case .customDetection(let c):
+            return c.response
         }
     }
 
@@ -65,6 +69,8 @@ struct DetectionBadge: View {
             return e.recommendation
         case .qrScan(let q):
             return q.actionTaken == "url_fetched" ? "URL detected" : "Text QR code"
+        case .customDetection(let c):
+            return c.profileName
         }
     }
 

@@ -7,20 +7,23 @@ enum DetectionItem: Identifiable, Sendable {
     case meal(MealRecord)
     case ergonomic(ErgonomicEvent)
     case qrScan(QRScan)
+    case customDetection(CustomDetectionRecord)
 
     var id: String {
         switch self {
-        case .meal(let m):      return "meal-\(m.id ?? 0)-\(m.timestamp.timeIntervalSince1970)"
-        case .ergonomic(let e): return "ergo-\(e.id ?? 0)-\(e.timestamp.timeIntervalSince1970)"
-        case .qrScan(let q):    return "qr-\(q.id.uuidString)-\(q.timestamp.timeIntervalSince1970)"
+        case .meal(let m):             return "meal-\(m.id ?? 0)-\(m.timestamp.timeIntervalSince1970)"
+        case .ergonomic(let e):        return "ergo-\(e.id ?? 0)-\(e.timestamp.timeIntervalSince1970)"
+        case .qrScan(let q):           return "qr-\(q.id.uuidString)"
+        case .customDetection(let c):  return "custom-\(c.id.uuidString)"
         }
     }
 
     var timestamp: Date {
         switch self {
-        case .meal(let m):      return m.timestamp
-        case .ergonomic(let e): return e.timestamp
-        case .qrScan(let q):    return q.timestamp
+        case .meal(let m):             return m.timestamp
+        case .ergonomic(let e):        return e.timestamp
+        case .qrScan(let q):           return q.timestamp
+        case .customDetection(let c):  return c.timestamp
         }
     }
 }
@@ -62,13 +65,15 @@ final class AppState {
         let ergoEvents  = await dbManager.fetchTodayErgonomicEvents()
         todayErgonomicAlerts = ergoEvents.count
 
-        let recentQR    = await dbManager.fetchRecentQRScans(limit: 5)
+        let recentQR      = await dbManager.fetchRecentQRScans(limit: 5)
+        let recentCustom  = await dbManager.fetchRecentCustomDetections(limit: 10)
 
-        let mealItems   = meals.suffix(10).map  { DetectionItem.meal($0) }
-        let ergoItems   = ergoEvents.suffix(5).map { DetectionItem.ergonomic($0) }
-        let qrItems     = recentQR.map { DetectionItem.qrScan($0) }
+        let mealItems     = meals.suffix(10).map     { DetectionItem.meal($0) }
+        let ergoItems     = ergoEvents.suffix(5).map { DetectionItem.ergonomic($0) }
+        let qrItems       = recentQR.map             { DetectionItem.qrScan($0) }
+        let customItems   = recentCustom.map         { DetectionItem.customDetection($0) }
 
-        recentDetections = (mealItems + ergoItems + qrItems)
+        recentDetections = (mealItems + ergoItems + qrItems + customItems)
             .sorted { $0.timestamp > $1.timestamp }
     }
 

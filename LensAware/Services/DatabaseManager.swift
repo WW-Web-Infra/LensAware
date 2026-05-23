@@ -599,6 +599,55 @@ actor DatabaseManager {
         return rows
     }
 
+    // MARK: - 20. saveCustomDetection
+
+    func saveCustomDetection(_ detection: CustomDetectionRecord) throws {
+        let sql = """
+            INSERT INTO custom_detections
+              (id, profile_id, profile_name, tenant_id, timestamp, response)
+            VALUES (?, ?, ?, ?, ?, ?);
+        """
+        guard let stmt = prepare(sql) else {
+            throw DatabaseError.writeError("Could not prepare custom_detections insert")
+        }
+        bindText(stmt, 1, detection.id.uuidString)
+        bindText(stmt, 2, detection.profileId.uuidString)
+        bindText(stmt, 3, detection.profileName)
+        bindText(stmt, 4, detection.tenantId)
+        bindText(stmt, 5, iso.string(from: detection.timestamp))
+        bindText(stmt, 6, detection.response)
+        sqlite3_step(stmt)
+        sqlite3_finalize(stmt)
+    }
+
+    // MARK: - 21. fetchRecentCustomDetections
+
+    func fetchRecentCustomDetections(limit: Int = 20) -> [CustomDetectionRecord] {
+        let sql = """
+            SELECT id, profile_id, profile_name, tenant_id, timestamp, response
+            FROM   custom_detections
+            ORDER  BY timestamp DESC
+            LIMIT  ?;
+        """
+        guard let stmt = prepare(sql) else { return [] }
+        sqlite3_bind_int(stmt, 1, Int32(limit))
+        var rows: [CustomDetectionRecord] = []
+        while sqlite3_step(stmt) == SQLITE_ROW {
+            guard let id  = UUID(uuidString: colString(stmt, 0)),
+                  let pid = UUID(uuidString: colString(stmt, 1)) else { continue }
+            rows.append(CustomDetectionRecord(
+                id:          id,
+                profileId:   pid,
+                profileName: colString(stmt, 2),
+                tenantId:    colString(stmt, 3),
+                timestamp:   iso.date(from: colString(stmt, 4)) ?? Date(),
+                response:    colString(stmt, 5)
+            ))
+        }
+        sqlite3_finalize(stmt)
+        return rows
+    }
+
     // MARK: - Schema (nonisolated — called from init and from setupDatabase)
 
     private nonisolated func createAllTables() {
@@ -702,6 +751,16 @@ actor DatabaseManager {
                 audio_response TEXT,
                 action_taken   TEXT,
                 success        INTEGER DEFAULT 1
+            );
+        """)
+        execute("""
+            CREATE TABLE IF NOT EXISTS custom_detections (
+                id           TEXT PRIMARY KEY,
+                profile_id   TEXT NOT NULL,
+                profile_name TEXT NOT NULL,
+                tenant_id    TEXT NOT NULL,
+                timestamp    TIMESTAMP NOT NULL,
+                response     TEXT NOT NULL
             );
         """)
     }

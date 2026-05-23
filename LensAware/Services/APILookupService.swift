@@ -57,14 +57,8 @@ struct APILookupService: Sendable {
         }
 
         guard let (data, response) = try? await URLSession.shared.data(for: request),
-              let http = response as? HTTPURLResponse else {
-            print("[LensAware] APILookupService — request failed (no response)")
-            return nil
-        }
-        print("[LensAware] APILookupService — HTTP \(http.statusCode)")
-        guard (200..<300).contains(http.statusCode) else {
-            let body = String(data: data, encoding: .utf8) ?? ""
-            print("[LensAware] APILookupService — error body: \(body.prefix(200))")
+              let http = response as? HTTPURLResponse,
+              (200..<300).contains(http.statusCode) else {
             return nil
         }
 
@@ -72,9 +66,7 @@ struct APILookupService: Sendable {
 
         // If a response key is configured, JSONPath only — never fall back to raw body
         if let key = responseKey {
-            let value = json.flatMap { resolveJSONPath(key, in: $0) }
-            print("[LensAware] APILookupService — responseKey '\(key)' resolved to: \(value ?? "nil")")
-            return value
+            return json.flatMap { resolveJSONPath(key, in: $0) }
         }
 
         // No key configured + JSON response: try common flat keys, otherwise return nil

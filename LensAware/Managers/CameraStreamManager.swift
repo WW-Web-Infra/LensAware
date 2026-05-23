@@ -192,7 +192,6 @@ final class CameraStreamManager: ObservableObject {
         guard now.timeIntervalSince(lastProcessedTime) >= processInterval else { return }
         lastProcessedTime = now
         guard let imageData = resizedJPEG(from: image) else { return }
-        print("[LensAware] Frame dispatched — \(imageData.count / 1024)KB")
         frameDelegate?.didReceiveFrame(imageData)
     }
 

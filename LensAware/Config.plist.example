@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!-- Tenant / Profile -->
+    <key>TenantID</key>
+    <string>default_tenant</string>
+    <key>AppProfile</key>
+    <string>health</string>
+
+    <!-- Gemini (active) — get a free key at https://aistudio.google.com/apikey -->
+    <key>GeminiAPIKey</key>
+    <string>YOUR_GEMINI_API_KEY</string>
+    <key>GeminiModel</key>
+    <string>gemini-1.5-flash</string>
+    <key>GeminiAPIBaseURL</key>
+    <string>https://generativelanguage.googleapis.com/v1beta/models</string>
+
+    <!-- Claude (optional swap-in) — get a key at https://console.anthropic.com -->
+    <key>ClaudeAPIKey</key>
+    <string>YOUR_CLAUDE_API_KEY</string>
+    <key>ClaudeModel</key>
+    <string>claude-haiku-4-5-20251001</string>
+    <key>ClaudeAPIBaseURL</key>
+    <string>https://api.anthropic.com/v1/messages</string>
+</dict>
+</plist>

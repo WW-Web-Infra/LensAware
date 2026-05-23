@@ -112,11 +112,9 @@ private extension HealthDetectionManager {
 
         let profile = activeProfile ?? engine.defaultProfiles(tenantId: tenantId)[0]
 
-        print("[LensAware] Pipeline — profile: \"\(profile.name)\" trigger: \(profile.triggerType) dataset: \(profile.datasetType)")
         captureState = .analyzing
 
         let audioStrings = await engine.process(imageData: imageData, profile: profile)
-        print("[LensAware] Pipeline — result: \(audioStrings.isEmpty ? "empty" : audioStrings.joined(separator: " | "))")
         lastAnalysis = engine.lastVisionAnalysis
 
         if let err = engine.lastError {
